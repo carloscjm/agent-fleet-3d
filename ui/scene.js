@@ -120,11 +120,13 @@ export function createScene(el, { onSelect } = {}) {
     spokeMat.color.copy(pal['ink-3']);
   }
   applyThemeColors();
-  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+  const retheme = () => {
     readPalette();
     applyThemeColors();
     for (const o of objs.values()) o.halo.material.blending = light ? THREE.NormalBlending : THREE.AdditiveBlending;
-  });
+  };
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', retheme);
+  new MutationObserver(retheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
   // ---------------------------------------------------------------- agents
   const objs = new Map();
