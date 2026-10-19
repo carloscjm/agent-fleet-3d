@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agent Fleet 3D</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Semi+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "./vendor/three/three.module.js",
+        "three/addons/": "./vendor/three/addons/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <aside class="projects" aria-label="Projetos">
+    <header>
+      <h1 class="brand">Agent Fleet<small>Projetos com agentes trabalhando agora</small></h1>
+      <input class="filter" id="filter" type="search" placeholder="Filtrar projetos" aria-label="Filtrar projetos" />
+    </header>
+    <ul class="project-list" id="projects"></ul>
+    <footer>
+      <div><span class="conn" id="conn">Conectando…</span></div>
+      <div id="router-stats" style="margin-top:6px"></div>
+    </footer>
+  </aside>
+
+  <main class="stage">
+    <div id="scene" aria-hidden="true"></div>
+
+    <div class="overlay title" id="title" hidden>
+      <h2 id="p-name"></h2>
+      <p id="p-root"></p>
+      <div class="chips" id="p-chips"></div>
+    </div>
+
+    <div class="overlay layouts" role="group" aria-label="Visualização">
+      <button type="button" data-layout="orbit" aria-pressed="true">Órbitas</button>
+      <button type="button" data-layout="lanes" aria-pressed="false">Trilhas</button>
+    </div>
+
+    <div class="overlay placeholder" id="placeholder">
+      <p>Escolha um projeto na coluna da esquerda para ver os agentes dele em 3D.</p>
+    </div>
+
+    <section class="overlay drawer" id="drawer" aria-label="Agentes do projeto" hidden>
+      <div class="head" id="d-head"></div>
+      <div class="body" id="d-body"></div>
+    </section>
+
+    <div class="overlay legend" aria-hidden="true">
+      <span><i style="background:var(--running)"></i>Executando ferramenta</span>
+      <span><i style="background:var(--thinking)"></i>Pensando</span>
+      <span><i style="background:var(--waiting)"></i>Aguardando você</span>
+      <span><i style="background:var(--error)"></i>Erro no último passo</span>
+      <span><i style="background:var(--idle)"></i>Ocioso ou concluído</span>
+    </div>
+  </main>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

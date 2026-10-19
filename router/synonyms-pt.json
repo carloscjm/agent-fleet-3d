@@ -1,0 +1,632 @@
+{
+  "acessibilidade": [
+    "accessibility",
+    "a11y"
+  ],
+  "acessivel": [
+    "accessible",
+    "accessibility"
+  ],
+  "leitor": [
+    "screen",
+    "reader"
+  ],
+  "teclado": [
+    "keyboard"
+  ],
+  "desempenho": [
+    "performance"
+  ],
+  "performance": [
+    "performance"
+  ],
+  "lento": [
+    "slow",
+    "performance"
+  ],
+  "lenta": [
+    "slow",
+    "performance"
+  ],
+  "otimizar": [
+    "optimize"
+  ],
+  "otimizacao": [
+    "optimization"
+  ],
+  "carregamento": [
+    "load"
+  ],
+  "seguranca": [
+    "security"
+  ],
+  "vulnerabilidade": [
+    "vulnerability",
+    "security"
+  ],
+  "vulnerabilidades": [
+    "vulnerability",
+    "security"
+  ],
+  "ameaca": [
+    "threat"
+  ],
+  "ameacas": [
+    "threat"
+  ],
+  "segredo": [
+    "secret"
+  ],
+  "segredos": [
+    "secret"
+  ],
+  "implantar": [
+    "deploy"
+  ],
+  "implantacao": [
+    "deploy"
+  ],
+  "publicar": [
+    "deploy",
+    "publish"
+  ],
+  "subir": [
+    "deploy"
+  ],
+  "hospedar": [
+    "host",
+    "deploy"
+  ],
+  "teste": [
+    "test"
+  ],
+  "testes": [
+    "test"
+  ],
+  "testar": [
+    "test"
+  ],
+  "automatizar": [
+    "automate",
+    "automation"
+  ],
+  "navegador": [
+    "browser"
+  ],
+  "raspar": [
+    "scrape"
+  ],
+  "captura": [
+    "screenshot"
+  ],
+  "tela": [
+    "screen",
+    "screenshot"
+  ],
+  "revisar": [
+    "review"
+  ],
+  "revisao": [
+    "review"
+  ],
+  "comentario": [
+    "comment"
+  ],
+  "comentarios": [
+    "comment"
+  ],
+  "arquitetura": [
+    "architecture"
+  ],
+  "decomposicao": [
+    "decomposition"
+  ],
+  "decompor": [
+    "decompose",
+    "decomposition"
+  ],
+  "modulo": [
+    "module",
+    "modular"
+  ],
+  "modulos": [
+    "module",
+    "modular"
+  ],
+  "modular": [
+    "modular"
+  ],
+  "monolito": [
+    "monolith"
+  ],
+  "microsservico": [
+    "microservice"
+  ],
+  "microsservicos": [
+    "microservice"
+  ],
+  "acoplamento": [
+    "coupling"
+  ],
+  "dominio": [
+    "domain"
+  ],
+  "dominios": [
+    "domain"
+  ],
+  "componente": [
+    "component"
+  ],
+  "componentes": [
+    "component"
+  ],
+  "migracao": [
+    "migration"
+  ],
+  "migrar": [
+    "migrate",
+    "migration"
+  ],
+  "legado": [
+    "legacy"
+  ],
+  "decisao": [
+    "decision"
+  ],
+  "decisoes": [
+    "decision"
+  ],
+  "decidir": [
+    "decide",
+    "decision"
+  ],
+  "registrar": [
+    "record"
+  ],
+  "proposta": [
+    "proposal",
+    "rfc"
+  ],
+  "documento": [
+    "document",
+    "doc"
+  ],
+  "documentacao": [
+    "documentation",
+    "docs"
+  ],
+  "documentar": [
+    "document",
+    "docs"
+  ],
+  "desenho": [
+    "design"
+  ],
+  "tecnico": [
+    "technical"
+  ],
+  "especificacao": [
+    "spec",
+    "specify"
+  ],
+  "especificar": [
+    "specify",
+    "spec"
+  ],
+  "requisito": [
+    "requirement"
+  ],
+  "requisitos": [
+    "requirement"
+  ],
+  "funcionalidade": [
+    "feature"
+  ],
+  "funcionalidades": [
+    "feature"
+  ],
+  "recurso": [
+    "feature"
+  ],
+  "planejar": [
+    "plan"
+  ],
+  "planejamento": [
+    "plan",
+    "planning"
+  ],
+  "plano": [
+    "plan"
+  ],
+  "tarefa": [
+    "task"
+  ],
+  "tarefas": [
+    "task"
+  ],
+  "implementar": [
+    "implement"
+  ],
+  "implementacao": [
+    "implement",
+    "implementation"
+  ],
+  "validar": [
+    "validate",
+    "verify"
+  ],
+  "verificar": [
+    "verify"
+  ],
+  "descobrir": [
+    "discover"
+  ],
+  "descoberta": [
+    "discover",
+    "discovery"
+  ],
+  "diagrama": [
+    "diagram"
+  ],
+  "diagramas": [
+    "diagram"
+  ],
+  "fluxograma": [
+    "flowchart",
+    "diagram"
+  ],
+  "desenhar": [
+    "draw",
+    "diagram"
+  ],
+  "quadro": [
+    "whiteboard",
+    "excalidraw"
+  ],
+  "interface": [
+    "interface",
+    "ui"
+  ],
+  "componentizacao": [
+    "composition",
+    "component"
+  ],
+  "precificacao": [
+    "pricing"
+  ],
+  "preco": [
+    "pricing",
+    "price"
+  ],
+  "precos": [
+    "pricing",
+    "price"
+  ],
+  "vendas": [
+    "sales"
+  ],
+  "venda": [
+    "sales"
+  ],
+  "prospeccao": [
+    "outreach",
+    "prospecting"
+  ],
+  "lancamento": [
+    "launch"
+  ],
+  "lancar": [
+    "launch"
+  ],
+  "posicionamento": [
+    "positioning"
+  ],
+  "metricas": [
+    "metrics"
+  ],
+  "metrica": [
+    "metrics"
+  ],
+  "painel": [
+    "dashboard"
+  ],
+  "retencao": [
+    "retention"
+  ],
+  "parceiros": [
+    "partner",
+    "affiliate"
+  ],
+  "afiliados": [
+    "affiliate"
+  ],
+  "anuncios": [
+    "ads"
+  ],
+  "anuncio": [
+    "ads"
+  ],
+  "criativo": [
+    "creative"
+  ],
+  "busca": [
+    "search",
+    "seo"
+  ],
+  "buscador": [
+    "search",
+    "seo"
+  ],
+  "erro": [
+    "error"
+  ],
+  "erros": [
+    "error"
+  ],
+  "falha": [
+    "failure",
+    "error"
+  ],
+  "falhando": [
+    "failing"
+  ],
+  "quebrado": [
+    "broken",
+    "failing"
+  ],
+  "monitorar": [
+    "monitor"
+  ],
+  "monitoramento": [
+    "monitoring"
+  ],
+  "observabilidade": [
+    "observability"
+  ],
+  "nuvem": [
+    "cloud"
+  ],
+  "infraestrutura": [
+    "infrastructure"
+  ],
+  "aprender": [
+    "learn"
+  ],
+  "aprendizado": [
+    "learning"
+  ],
+  "estudar": [
+    "learn",
+    "study"
+  ],
+  "ensinar": [
+    "teach",
+    "learning"
+  ],
+  "criar": [
+    "create"
+  ],
+  "criacao": [
+    "create"
+  ],
+  "subagente": [
+    "subagent"
+  ],
+  "subagentes": [
+    "subagent"
+  ],
+  "habilidade": [
+    "skill"
+  ],
+  "julgar": [
+    "judge",
+    "evaluate"
+  ],
+  "avaliar": [
+    "evaluate",
+    "eval"
+  ],
+  "avaliacao": [
+    "evaluation",
+    "eval"
+  ],
+  "critica": [
+    "critique",
+    "challenge"
+  ],
+  "criticar": [
+    "critique",
+    "challenge"
+  ],
+  "questionar": [
+    "challenge"
+  ],
+  "advogado": [
+    "devil",
+    "advocate"
+  ],
+  "diabo": [
+    "devil"
+  ],
+  "navegar": [
+    "navigate"
+  ],
+  "codigo": [
+    "code"
+  ],
+  "guia": [
+    "guideline"
+  ],
+  "diretrizes": [
+    "guideline"
+  ],
+  "boas": [
+    "best"
+  ],
+  "praticas": [
+    "practice"
+  ],
+  "qualidade": [
+    "quality"
+  ],
+  "auditoria": [
+    "audit"
+  ],
+  "auditar": [
+    "audit"
+  ],
+  "pagina": [
+    "page"
+  ],
+  "site": [
+    "site",
+    "web"
+  ],
+  "aplicativo": [
+    "app"
+  ],
+  "celular": [
+    "mobile",
+    "react",
+    "native"
+  ],
+  "movel": [
+    "mobile"
+  ],
+  "loja": [
+    "store",
+    "shop"
+  ],
+  "esteira": [
+    "pipeline",
+    "ci"
+  ],
+  "integracao": [
+    "integration"
+  ],
+  "continua": [
+    "continuous"
+  ],
+  "chamado": [
+    "ticket",
+    "issue"
+  ],
+  "chamados": [
+    "ticket",
+    "issue"
+  ],
+  "precificar": [
+    "pricing",
+    "price"
+  ],
+  "ia": [
+    "ai"
+  ],
+  "produto": [
+    "product"
+  ],
+  "produtos": [
+    "product"
+  ],
+  "corrigir": [
+    "fix"
+  ],
+  "corrija": [
+    "fix"
+  ],
+  "consertar": [
+    "fix"
+  ],
+  "conserte": [
+    "fix"
+  ],
+  "arrumar": [
+    "fix"
+  ],
+  "arrume": [
+    "fix"
+  ],
+  "melhorar": [
+    "improve"
+  ],
+  "melhore": [
+    "improve"
+  ],
+  "analisar": [
+    "analyze",
+    "analysis"
+  ],
+  "analise": [
+    "analyze",
+    "analysis"
+  ],
+  "escrever": [
+    "write"
+  ],
+  "escreva": [
+    "write"
+  ],
+  "gerar": [
+    "generate"
+  ],
+  "gere": [
+    "generate"
+  ],
+  "configurar": [
+    "configure",
+    "setup"
+  ],
+  "crie": [
+    "create"
+  ],
+  "faca": [
+    "do"
+  ],
+  "revise": [
+    "review"
+  ],
+  "implemente": [
+    "implement"
+  ],
+  "planeje": [
+    "plan"
+  ],
+  "audite": [
+    "audit"
+  ],
+  "monitore": [
+    "monitor"
+  ],
+  "documente": [
+    "document",
+    "docs"
+  ],
+  "mesclagem": [
+    "merge"
+  ],
+  "conflito": [
+    "conflict"
+  ],
+  "conflitos": [
+    "conflict"
+  ],
+  "rascunho": [
+    "draft"
+  ],
+  "registre": [
+    "record",
+    "document"
+  ],
+  "registro": [
+    "record"
+  ],
+  "habilidades": [
+    "skill"
+  ],
+  "time": [
+    "team"
+  ],
+  "equipe": [
+    "team"
+  ]
+}

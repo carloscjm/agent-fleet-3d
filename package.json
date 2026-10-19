@@ -1,0 +1,17 @@
+{
+  "name": "agent-fleet-3d",
+  "version": "0.1.0",
+  "description": "Claude Code plugin: 3D dashboard of agents per project + token-lean skill router over the Tech Leads Club catalog",
+  "type": "module",
+  "license": "MIT",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "start": "node server/server.mjs --open",
+    "demo": "node server/server.mjs --demo --open",
+    "test": "node --test test/router.test.mjs test/core.test.mjs",
+    "build:index": "node scripts/build-index.mjs",
+    "build:demo": "node scripts/build-demo.mjs",
+    "sync:skills": "node scripts/sync-skills.mjs",
+    "route": "node router/route-cli.mjs"
+  }
+}

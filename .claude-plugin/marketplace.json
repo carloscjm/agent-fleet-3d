@@ -1,0 +1,11 @@
+{
+  "name": "agent-fleet-3d",
+  "owner": { "name": "Carlos" },
+  "plugins": [
+    {
+      "name": "agent-fleet-3d",
+      "source": "./",
+      "description": "Dashboard 3D de agentes por projeto + roteador de skills TLC com baixo consumo de tokens."
+    }
+  ]
+}
