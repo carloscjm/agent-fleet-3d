@@ -20,7 +20,7 @@
 <body>
   <aside class="projects" aria-label="Projetos">
     <header>
-      <h1 class="brand">Agent Fleet<small>Projetos com agentes trabalhando agora</small></h1>
+      <h1 class="brand">Agent Fleet<small>Pipeline de agentes em 3D</small></h1>
       <input class="filter" id="filter" type="search" placeholder="Filtrar projetos" aria-label="Filtrar projetos" />
     </header>
     <ul class="project-list" id="projects"></ul>
@@ -39,26 +39,23 @@
       <div class="chips" id="p-chips"></div>
     </div>
 
-    <div class="overlay layouts" role="group" aria-label="Visualização">
-      <button type="button" data-layout="orbit" aria-pressed="true">Órbitas</button>
-      <button type="button" data-layout="lanes" aria-pressed="false">Trilhas</button>
-    </div>
+    <button type="button" class="overlay recenter" id="recenter" hidden>Recentrar câmera</button>
 
     <div class="overlay placeholder" id="placeholder">
-      <p>Escolha um projeto na coluna da esquerda para ver os agentes dele em 3D.</p>
+      <p>Escolha um projeto na coluna da esquerda para ver o pipeline dele em 3D.</p>
     </div>
 
-    <section class="overlay drawer" id="drawer" aria-label="Agentes do projeto" hidden>
+    <section class="overlay drawer" id="drawer" aria-label="Pipeline do projeto" hidden>
       <div class="head" id="d-head"></div>
       <div class="body" id="d-body"></div>
     </section>
 
     <div class="overlay legend" aria-hidden="true">
-      <span><i style="background:var(--running)"></i>Executando ferramenta</span>
-      <span><i style="background:var(--thinking)"></i>Pensando</span>
+      <span><i style="background:var(--idle)"></i>Aguardando</span>
+      <span><i style="background:var(--running)"></i>Em andamento</span>
+      <span><i style="background:var(--thinking)"></i>Concluído</span>
+      <span><i style="background:var(--error)"></i>Reprovado ou erro</span>
       <span><i style="background:var(--waiting)"></i>Aguardando você</span>
-      <span><i style="background:var(--error)"></i>Erro no último passo</span>
-      <span><i style="background:var(--idle)"></i>Ocioso ou concluído</span>
     </div>
   </main>
 

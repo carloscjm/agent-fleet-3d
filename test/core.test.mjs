@@ -50,3 +50,53 @@ test('hook input becomes a compact event', () => {
   assert.equal(summarize('mcp__github__create_pull_request', {}), 'create_pull_request (github)');
   assert.equal(summarize('Bash', { command: 'npm test', description: 'Run tests' }), 'Run tests');
 });
+
+import { stageOf, verdictOf } from '../shared/fleet-core.mjs';
+
+test('stage mapping and QA verdict parsing', () => {
+  assert.equal(stageOf('agent-fleet-3d:tech-lead'), 'plan');
+  assert.equal(stageOf('engineer'), 'build');
+  assert.equal(stageOf('agent-fleet-3d:qa'), 'test');
+  assert.equal(stageOf('agent-fleet-3d:devops'), 'ship');
+  assert.equal(stageOf('Explore'), null);
+  assert.equal(stageOf('Plan'), null);
+  assert.equal(verdictOf('ok\nVEREDITO: REPROVADO'), 'fail');
+  assert.equal(verdictOf('VEREDITO: APROVADO'), 'pass');
+});
+
+test('pipeline run with QA rework then ship', () => {
+  const st = createState();
+  let t = 1000;
+  const ev = (e, extra = {}) => apply(st, { t: t++, e, sid: 'sess', proj, ...extra });
+  const stage = (aid, role, msg) => {
+    ev('PreToolUse', { tool: 'Agent', tuid: 'd' + aid, delegate: { type: `agent-fleet-3d:${role}`, desc: 'Planejar: retry' } });
+    ev('SubagentStart', { aid, at: `agent-fleet-3d:${role}` });
+    ev('PreToolUse', { aid, at: `agent-fleet-3d:${role}`, tool: 'Bash', tuid: 't' + aid, step: 'npm test' });
+    ev('PostToolUse', { aid, at: `agent-fleet-3d:${role}`, tool: 'Bash', tuid: 't' + aid });
+    if (msg !== undefined) ev('SubagentStop', { aid, at: `agent-fleet-3d:${role}`, msg, verdict: verdictOf(msg) });
+  };
+  stage('a1', 'tech-lead', 'PLAN.md');
+  stage('a2', 'engineer', 'feito');
+  stage('a3', 'qa', 'VEREDITO: REPROVADO');
+  let run = projectDetail(st, 'p1', t).flows[0].run;
+  assert.equal(run.stages[2].status, 'failed');
+  assert.equal(run.status, 'blocked');
+  stage('a4', 'engineer');
+  run = projectDetail(st, 'p1', t).flows[0].run;
+  assert.equal(run.current, 'build');
+  assert.equal(run.reworks, 1);
+  ev('SubagentStop', { aid: 'a4', at: 'agent-fleet-3d:engineer', msg: 'corrigido' });
+  stage('a5', 'qa', 'VEREDITO: APROVADO');
+  stage('a6', 'devops', 'PR aberto');
+  run = projectDetail(st, 'p1', t).flows[0].run;
+  assert.equal(run.status, 'complete');
+  assert.deepEqual(run.stages.map((s) => s.status), ['done', 'done', 'done', 'done']);
+  assert.equal(run.stages[2].attempts, 2);
+  assert.equal(run.task, 'retry');
+  // a new Tech Lead after shipping starts run #2
+  stage('a7', 'tech-lead');
+  const flow = projectDetail(st, 'p1', t).flows[0];
+  assert.equal(flow.runs, 2);
+  assert.equal(flow.run.current, 'plan');
+  assert.equal(listProjects(st, t)[0].pipe.stages[0], 'active');
+});

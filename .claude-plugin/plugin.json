@@ -1,14 +1,15 @@
 {
   "name": "agent-fleet-3d",
   "displayName": "Agent Fleet 3D",
-  "version": "0.2.1",
-  "description": "Gerenciador de agentes: lista de projetos ativos + visualização 3D dos agentes e do passo atual, com roteador de skills (catálogo Tech Leads Club) que gasta o mínimo de tokens.",
+  "version": "0.3.0",
+  "description": "Pipeline de agentes (Tech Lead, Engenheiro, QA, DevOps) com dashboard 3D em fluxo dos projetos ativos e roteador de skills do Tech Leads Club que gasta o mínimo de tokens.",
   "author": {
     "name": "Carlos",
     "email": "carloscjm9@gmail.com"
   },
   "license": "MIT",
   "keywords": [
+    "pipeline",
     "agents",
     "dashboard",
     "3d",

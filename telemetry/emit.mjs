@@ -3,6 +3,7 @@
 import { basename, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readStdin, appendEvent, projectOf, loadSessions, saveSessions } from './common.mjs';
+import { stageOf, verdictOf } from '../shared/fleet-core.mjs';
 
 const clip = (s, n = 70) => {
   s = String(s ?? '').replace(/\s+/g, ' ').trim();
@@ -87,6 +88,12 @@ export function toEvent(h) {
   if (e === 'Notification') ev.step = clip(h.message || 'Aguardando entrada', 60);
   if (e === 'PermissionRequest') ev.step = `Permissão: ${summarize(h.tool_name, h.tool_input)}`;
   if (e === 'SessionStart') ev.source = h.source;
+  if (e === 'SubagentStop' && stageOf(h.agent_type)) {
+    // Pipeline stages: keep the outcome (QA verdict, PR link…) for the dashboard.
+    const msg = String(h.last_assistant_message || '');
+    ev.msg = msg.trim().split('\n').slice(-3).join('\n').slice(-240);
+    ev.verdict = verdictOf(msg);
+  }
   if (e === 'PostToolUseFailure') ev.err = clip(h.error || h.tool_response?.error || 'failed', 80);
   return ev;
 }

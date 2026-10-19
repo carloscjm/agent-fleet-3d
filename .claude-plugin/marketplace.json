@@ -7,7 +7,7 @@
     {
       "name": "agent-fleet-3d",
       "source": "./",
-      "description": "Dashboard 3D de agentes por projeto + roteador de skills TLC com baixo consumo de tokens."
+      "description": "Pipeline Tech Lead → Engenheiro → QA → DevOps com dashboard 3D em fluxo e roteador de skills TLC."
     }
   ],
   "description": "Agent Fleet 3D: dashboard 3D de agentes do Claude Code e roteador de skills Tech Leads Club."

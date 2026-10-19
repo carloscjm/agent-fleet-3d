@@ -1,8 +1,38 @@
 // Isomorphic state reducer for agent telemetry events (runs in Node and in the browser).
 export const ACTIVE_WINDOW_MS = 60 * 60 * 1000; // project stays listed for 1h after last activity
 export const STALE_MS = 15 * 60 * 1000; // agent with no events for 15 min shows as stale
+export const SUB_LINGER_MS = 2 * 60 * 1000; // finished generic subagents leave the view after 2 min
 const MAX_STEPS = 40;
-export const SUB_LINGER_MS = 2 * 60 * 1000;
+
+// ---------------------------------------------------------------------------
+// Delivery pipeline: Tech Lead → Engenheiro → QA → DevOps
+export const STAGES = [
+  { key: 'plan', role: 'tech-lead', label: 'Tech Lead', verb: 'Planeja a execução' },
+  { key: 'build', role: 'engineer', label: 'Engenheiro', verb: 'Implementa o plano' },
+  { key: 'test', role: 'qa', label: 'QA', verb: 'Testa os critérios' },
+  { key: 'ship', role: 'devops', label: 'DevOps', verb: 'Sobe para o git' },
+];
+const STAGE_PATTERNS = [
+  ['plan', /^(tech-?lead|tech_lead|techlead)$/],
+  ['build', /^(engineer|engenheiro|developer|dev)$/],
+  ['test', /^(qa|tester|quality|quality-assurance)$/],
+  ['ship', /^(devops|dev-ops|release|release-manager)$/],
+];
+/** Maps a subagent type ("agent-fleet-3d:tech-lead", "qa", …) to a pipeline stage key, or null. */
+export function stageOf(type) {
+  const t = String(type || '').toLowerCase().split(':').pop().trim();
+  for (const [key, re] of STAGE_PATTERNS) if (re.test(t)) return key;
+  return null;
+}
+/** Reads the QA verdict from a final message. */
+export function verdictOf(text) {
+  const s = String(text || '');
+  const m = s.match(/VEREDITO:\s*(APROVADO|REPROVADO)/i);
+  if (m) return m[1].toUpperCase() === 'APROVADO' ? 'pass' : 'fail';
+  if (/\b(REPROVADO|FAILED|FAIL)\b/i.test(s)) return 'fail';
+  if (/\b(APROVADO|PASSED|PASS)\b/i.test(s)) return 'pass';
+  return null;
+}
 
 export function createState() {
   return { projects: new Map(), routes: { total: 0, injected: 0, tokens: 0, bySkill: {} }, version: 0 };
@@ -25,13 +55,17 @@ function agent(pr, id, init) {
       parent: null,
       kind: 'main',
       type: 'main',
+      stage: null,
       label: 'Sessão principal',
       status: 'ready',
       step: 'Sessão iniciada',
       tool: null,
       skill: null,
+      verdict: null,
+      result: null,
       steps: [],
       started: init.t,
+      ended: null,
       last: init.t,
       tools: 0,
       errors: 0,
@@ -57,9 +91,11 @@ export function apply(state, ev) {
 
   let a = main;
   if (ev.aid && ev.aid !== ev.sid) {
+    const stage = stageOf(ev.at);
+    const st = STAGES.find((s) => s.key === stage);
     a = agent(pr, ev.aid, {
       t: ev.t,
-      fields: { parent: ev.sid, kind: 'sub', type: ev.at || 'subagent', label: ev.at || 'subagent' },
+      fields: { parent: ev.sid, kind: 'sub', type: ev.at || 'subagent', stage, label: st ? st.label : ev.at || 'subagent' },
     });
   }
   a.last = Math.max(a.last, ev.t);
@@ -105,7 +141,7 @@ export function apply(state, ev) {
         if (failed) s.err = ev.err;
       }
       if (failed) a.errors++;
-      a.status = failed ? 'error' : 'thinking';
+      if (a.status !== 'done') a.status = failed ? 'error' : 'thinking';
       if (!a.steps.some((x) => x.st === 'running')) a.tool = null;
       break;
     }
@@ -121,13 +157,20 @@ export function apply(state, ev) {
       if (a !== main) {
         a.status = 'thinking';
         a.step = d?.desc ? `Iniciando: ${d.desc}` : 'Iniciando';
-        if (d?.desc) a.label = `${a.type}: ${d.desc}`;
+        if (d?.desc && !a.stage) a.label = `${a.type}: ${d.desc}`;
+        if (d?.desc) a.task = d.desc;
       }
       break;
     }
     case 'SubagentStop':
       a.status = 'done';
+      a.ended = ev.t;
       a.step = 'Concluído';
+      if (ev.msg) a.result = ev.msg;
+      if (a.stage === 'test') a.verdict = ev.verdict || verdictOf(ev.msg);
+      if (a.stage === 'test' && a.verdict) a.step = a.verdict === 'pass' ? 'Aprovado' : 'Reprovado';
+      for (const s of a.steps) if (s.st === 'running') s.st = 'done';
+      a.tool = null;
       break;
     case 'Stop':
       a.status = a.kind === 'main' ? 'idle' : 'done';
@@ -150,6 +193,97 @@ export function effectiveStatus(a, now) {
 
 const LIVE = new Set(['running', 'thinking', 'waiting', 'error', 'ready']);
 
+// ---------------------------------------------------------------------------
+// Pipeline runs, derived from the stage subagents of each main session.
+function runsOf(pr, sid) {
+  const subs = [...pr.agents.values()].filter((a) => a.parent === sid && a.stage).sort((x, y) => x.started - y.started);
+  const runs = [];
+  let cur = null;
+  for (const a of subs) {
+    const newRun = !cur || (a.stage === 'plan' && cur.pastPlan) || (cur.shipped && a.stage !== 'ship');
+    if (newRun) {
+      cur = { started: a.started, stages: { plan: [], build: [], test: [], ship: [] }, pastPlan: false, shipped: false };
+      runs.push(cur);
+    }
+    cur.stages[a.stage].push(a);
+    if (a.stage !== 'plan') cur.pastPlan = true;
+    if (a.stage === 'ship' && a.status === 'done') cur.shipped = true;
+  }
+  return runs;
+}
+
+function summarizeRun(run, now, index) {
+  const stages = STAGES.map((def) => {
+    const attempts = run.stages[def.key];
+    const last = attempts[attempts.length - 1];
+    if (!last) return { key: def.key, label: def.label, verb: def.verb, status: 'pending', attempts: 0 };
+    const ast = effectiveStatus(last, now);
+    let status = LIVE.has(ast) ? 'active' : ast === 'stale' ? 'stale' : 'done';
+    if (status === 'done' && def.key === 'test' && last.verdict === 'fail') status = 'failed';
+    const first = attempts[0];
+    return {
+      key: def.key,
+      label: def.label,
+      verb: def.verb,
+      status,
+      agentId: last.id,
+      agentStatus: ast,
+      step: last.step,
+      skill: last.skill,
+      verdict: last.verdict,
+      result: last.result,
+      attempts: attempts.length,
+      started: first.started,
+      ended: status === 'done' || status === 'failed' ? last.ended || last.last : null,
+      dur: (status === 'active' ? now : last.ended || last.last) - first.started,
+      tools: attempts.reduce((n, a) => n + a.tools, 0),
+      errors: attempts.reduce((n, a) => n + a.errors, 0),
+      steps: last.steps.slice(-8).map(({ tool, step, st, dur }) => ({ tool, step, st, dur })),
+      history: attempts.map((a) => ({ id: a.id, status: effectiveStatus(a, now), verdict: a.verdict })),
+    };
+  });
+  const active = stages.find((s) => s.status === 'active');
+  const shipped = stages[3].status === 'done';
+  const lastTest = stages[2];
+  // QA failed and nobody picked the work back up: the run is blocked waiting for a decision.
+  const blocked = !active && !shipped && lastTest.status === 'failed';
+  const nextIdx = stages.findIndex((s) => s.status === 'pending');
+  return {
+    n: index + 1,
+    started: run.started,
+    stages,
+    current: active ? active.key : shipped ? 'complete' : blocked ? 'test' : nextIdx >= 0 ? stages[nextIdx].key : null,
+    status: shipped ? 'complete' : active ? 'running' : blocked ? 'blocked' : 'waiting',
+    reworks: Math.max(0, stages[1].attempts - 1),
+    task: (run.stages.plan[0]?.task || run.stages.build[0]?.task || '').replace(/^(Planejar|Implementar|Planear|Plan):\s*/i, '') || null,
+  };
+}
+
+function flowsOf(pr, now) {
+  const mains = [...pr.agents.values()].filter((a) => a.kind === 'main' && (a.status !== 'ended' || now - a.last < ACTIVE_WINDOW_MS));
+  return mains
+    .map((m) => {
+      const runs = runsOf(pr, m.id);
+      const run = runs.length ? summarizeRun(runs[runs.length - 1], now, runs.length - 1) : null;
+      const others = [...pr.agents.values()].filter((a) => a.parent === m.id && !a.stage);
+      return {
+        sid: m.id,
+        label: m.label,
+        status: effectiveStatus(m, now),
+        step: m.step,
+        skill: m.skill,
+        last: m.last,
+        started: m.started,
+        runs: runs.length,
+        completed: runs.filter((r) => r.shipped).length,
+        run,
+        others: others.filter((a) => effectiveStatus(a, now) !== 'done' || now - a.last < SUB_LINGER_MS).map((a) => a.id),
+      };
+    })
+    // stable order (oldest session first) so rows don't jump around as activity changes
+    .sort((x, y) => (y.run ? 1 : 0) - (x.run ? 1 : 0) || x.started - y.started);
+}
+
 export function listProjects(state, now = Date.now(), { includeInactive = false } = {}) {
   const out = [];
   for (const pr of state.projects.values()) {
@@ -163,7 +297,9 @@ export function listProjects(state, now = Date.now(), { includeInactive = false 
     const active = live > 0 || now - pr.last < ACTIVE_WINDOW_MS;
     if (!active && !includeInactive) continue;
     const lead = [...pr.agents.values()].sort((x, y) => y.last - x.last)[0];
-    out.push({ id: pr.id, name: pr.name, root: pr.root, last: pr.last, total: pr.agents.size, live, counts, active, step: lead?.step || '' });
+    const flow = flowsOf(pr, now).find((f) => f.run);
+    const pipe = flow ? { status: flow.run.status, current: flow.run.current, stages: flow.run.stages.map((s) => s.status), reworks: flow.run.reworks } : null;
+    out.push({ id: pr.id, name: pr.name, root: pr.root, last: pr.last, total: pr.agents.size, live, counts, active, step: lead?.step || '', pipe });
   }
   return out.sort((x, y) => y.live - x.live || y.last - x.last);
 }
@@ -171,42 +307,64 @@ export function listProjects(state, now = Date.now(), { includeInactive = false 
 export function projectDetail(state, id, now = Date.now()) {
   const pr = state.projects.get(id);
   if (!pr) return null;
+  const flows = flowsOf(pr, now);
+  const keep = new Set();
+  for (const f of flows) {
+    keep.add(f.sid);
+    for (const o of f.others) keep.add(o);
+    if (f.run) for (const s of f.run.stages) for (const h of s.history || []) keep.add(h.id);
+  }
   const agents = [...pr.agents.values()]
-    // finished subagents leave the view after 2 min; ended sessions after the active window
-    .filter((a) => !(a.kind === 'sub' && (a.status === 'done' || a.status === 'ended') && now - a.last > SUB_LINGER_MS))
-    .filter((a) => a.status !== 'ended' || now - a.last < ACTIVE_WINDOW_MS)
+    .filter((a) => keep.has(a.id) || (a.kind === 'sub' && !a.stage && effectiveStatus(a, now) !== 'done'))
     .map(({ pending, ...a }) => ({ ...a, status: effectiveStatus(a, now), steps: a.steps.slice(-25) }));
-  return { id: pr.id, name: pr.name, root: pr.root, last: pr.last, agents };
+  return { id: pr.id, name: pr.name, root: pr.root, last: pr.last, flows, agents };
 }
 
 // ---------------------------------------------------------------------------
-// Demo generator: plausible multi-agent activity, same event shape as the hooks.
+// Demo generator: sessions running the delivery pipeline, same event shape as the hooks.
 const DEMO_PROJECTS = [
-  { id: 'demo-checkout', name: 'checkout-api', root: '~/code/checkout-api' },
-  { id: 'demo-mobile', name: 'mobile-app', root: '~/code/mobile-app' },
-  { id: 'demo-data', name: 'data-pipeline', root: '~/code/data-pipeline' },
-  { id: 'demo-site', name: 'landing-site', root: '~/code/landing-site' },
+  { id: 'demo-checkout', name: 'checkout-api', root: '~/code/checkout-api', tasks: ['Retry com idempotência no pagamento', 'Webhook de estorno', 'Limite de tentativas por cartão'] },
+  { id: 'demo-mobile', name: 'mobile-app', root: '~/code/mobile-app', tasks: ['Tela de onboarding com biometria', 'Cache offline do carrinho'] },
+  { id: 'demo-data', name: 'data-pipeline', root: '~/code/data-pipeline', tasks: ['Deduplicar eventos de pedido', 'Particionar tabela de vendas'] },
+  { id: 'demo-site', name: 'landing-site', root: '~/code/landing-site', tasks: ['Melhorar LCP da home', 'Formulário de contato acessível'] },
 ];
-const SUBS = [
-  ['Explore', 'Mapear módulos de pagamento'],
-  ['general-purpose', 'Escrever testes de integração'],
-  ['Plan', 'Desenhar estratégia de retry'],
-  ['security-reviewer', 'Revisar mudanças de auth'],
-  ['Explore', 'Encontrar código morto'],
-];
-const TOOLS = [
-  ['Read', 'Read src/payments/service.ts'],
-  ['Grep', 'Grep "processPayment"'],
-  ['Edit', 'Edit retry-policy.ts'],
-  ['Bash', 'Rodar testes unitários'],
-  ['Bash', 'npm run lint'],
-  ['Write', 'Write checkout.spec.ts'],
-  ['WebSearch', 'Search "stripe idempotency keys"'],
-  ['Glob', 'Glob src/**/*.tsx'],
-  ['Read', 'Read SKILL.md'],
-  ['mcp__github__create_pull_request', 'create_pull_request (github)'],
-];
-const SKILLS = ['tlc-spec-driven', 'security-best-practices', 'react-native-expert', 'core-web-vitals', 'mermaid-studio', 'the-judge'];
+const STAGE_TOOLS = {
+  plan: [
+    ['Read', 'Lendo skill tlc-plan'],
+    ['Glob', 'Glob src/**/*.ts'],
+    ['Grep', 'Grep "processPayment"'],
+    ['Read', 'Read src/payments/service.ts'],
+    ['Read', 'Read package.json'],
+    ['Write', 'Write PLAN.md'],
+  ],
+  build: [
+    ['Read', 'Lendo skill tlc-implement'],
+    ['Read', 'Read PLAN.md'],
+    ['Edit', 'Edit retry-policy.ts'],
+    ['Edit', 'Edit service.ts'],
+    ['Write', 'Write retry-policy.spec.ts'],
+    ['Bash', 'Rodar testes unitários'],
+    ['Bash', 'npm run lint'],
+    ['Write', 'Write IMPLEMENTATION.md'],
+  ],
+  test: [
+    ['Read', 'Lendo skill spec-driven-eval'],
+    ['Read', 'Read PLAN.md'],
+    ['Bash', 'git diff'],
+    ['Bash', 'Rodar testes unitários'],
+    ['Bash', 'npm run build'],
+    ['Write', 'Write QA.md'],
+  ],
+  ship: [
+    ['Bash', 'git status'],
+    ['Bash', 'git checkout -b feat/retry-idempotente'],
+    ['Bash', 'git add src/payments'],
+    ['Bash', 'git commit -m "feat(pagamentos): retry com idempotência"'],
+    ['Bash', 'git push -u origin feat/retry-idempotente'],
+    ['Bash', 'gh pr create'],
+  ],
+};
+const ORDER = ['plan', 'build', 'test', 'ship'];
 
 export function startDemo(emit, { speed = 1, rand = Math.random } = {}) {
   const pick = (arr) => arr[Math.floor(rand() * arr.length)];
@@ -217,43 +375,95 @@ export function startDemo(emit, { speed = 1, rand = Math.random } = {}) {
     const count = i === 0 ? 2 : 1;
     for (let k = 0; k < count; k++) {
       const sid = Math.floor(rand() * 0xffffffff).toString(16).padStart(8, '0') + i + k;
-      sessions.push({ sid, proj: p, subs: [], main: { aid: null, at: null, open: null } });
+      const s = { sid, proj: p, task: 0, phase: 'idle', idleUntil: 0, stage: null, failedOnce: false };
+      sessions.push(s);
       emit({ t: t0, e: 'SessionStart', sid, proj: p, source: 'startup' });
-      emit({ t: t0, e: 'UserPromptSubmit', sid, proj: p, step: 'Prompt: implemente a próxima tarefa' });
-      emit({ t: t0, e: 'Route', sid, proj: p, mode: 'single', skills: [SKILLS[(i + k) % SKILLS.length]], tokens: 62 });
+      // stagger: sessions start at different points of the pipeline
+      startTask(s, t0);
+      const skip = (i + k) % 4;
+      for (let j = 0; j < skip; j++) finishStage(s, t0, true);
     }
   });
+
+  function startTask(s, t) {
+    const task = s.proj.tasks[s.task++ % s.proj.tasks.length];
+    s.taskName = task;
+    s.failedOnce = false;
+    emit({ t, e: 'UserPromptSubmit', sid: s.sid, proj: s.proj, step: `Prompt: /agent-fleet-3d:pipeline ${task}` });
+    emit({ t, e: 'Route', sid: s.sid, proj: s.proj, mode: 'single', skills: ['tlc-plan'], tokens: 58 });
+    startStage(s, 'plan', t);
+  }
+
+  function startStage(s, key, t) {
+    const role = { plan: 'tech-lead', build: 'engineer', test: 'qa', ship: 'devops' }[key];
+    const aid = `a${(n++).toString(36)}${Math.floor(rand() * 1e5).toString(36)}`;
+    const at = `agent-fleet-3d:${role}`;
+    const tuid = `d${aid}`;
+    const desc = { plan: `Planejar: ${s.taskName}`, build: s.failedOnce && s.reworkPending ? 'Retrabalho do QA' : `Implementar: ${s.taskName}`, test: `Testar: ${s.taskName}`, ship: 'Subir para o git' }[key];
+    emit({ t, e: 'PreToolUse', sid: s.sid, proj: s.proj, tool: 'Agent', tuid, step: `Delegando: ${desc}`, delegate: { type: at, desc } });
+    emit({ t, e: 'SubagentStart', sid: s.sid, proj: s.proj, aid, at });
+    s.stage = { key, aid, at, tuid, ticks: 0, target: 5 + Math.floor(rand() * 5), open: null };
+    s.phase = key;
+    s.reworkPending = false;
+  }
+
+  function finishStage(s, t, fast = false) {
+    const st = s.stage;
+    if (!st) return;
+    if (st.open) emit({ t, e: 'PostToolUse', sid: s.sid, proj: s.proj, aid: st.aid, at: st.at, tool: st.open[0], tuid: st.open[2] });
+    if (fast) {
+      for (const [tool, step] of STAGE_TOOLS[st.key].slice(0, 3)) {
+        const tuid = `t${(n++).toString(36)}`;
+        emit({ t, e: 'PreToolUse', sid: s.sid, proj: s.proj, aid: st.aid, at: st.at, tool, step, tuid });
+        emit({ t, e: 'PostToolUse', sid: s.sid, proj: s.proj, aid: st.aid, at: st.at, tool, tuid });
+      }
+    }
+    let verdict = null;
+    let msg = { plan: 'PLAN.md com 4 tarefas', build: 'Testes passando, IMPLEMENTATION.md escrito', ship: 'PR #42 aberto em feat/retry-idempotente' }[st.key];
+    if (st.key === 'test') {
+      const fail = !s.failedOnce && rand() < 0.45;
+      verdict = fail ? 'fail' : 'pass';
+      msg = fail ? '2 critérios falharam\nVEREDITO: REPROVADO' : 'Todos os critérios passaram\nVEREDITO: APROVADO';
+      if (fail) s.failedOnce = true;
+    }
+    emit({ t, e: 'SubagentStop', sid: s.sid, proj: s.proj, aid: st.aid, at: st.at, msg, verdict });
+    emit({ t, e: 'PostToolUse', sid: s.sid, proj: s.proj, tool: 'Agent', tuid: st.tuid });
+    s.stage = null;
+    if (st.key === 'test' && verdict === 'fail') {
+      s.reworkPending = true;
+      return startStage(s, 'build', t);
+    }
+    const next = ORDER[ORDER.indexOf(st.key) + 1];
+    if (next) return startStage(s, next, t);
+    emit({ t, e: 'Stop', sid: s.sid, proj: s.proj });
+    s.phase = 'idle';
+    s.idleUntil = t + (6000 + rand() * 8000) / speed;
+  }
 
   const tick = () => {
     const t = Date.now();
     const s = pick(sessions);
-    const actors = [s.main, s.main, ...s.subs.filter((x) => !x.done)];
-    const actor = pick(actors);
-    const base = { t, sid: s.sid, proj: s.proj, aid: actor.aid, at: actor.at };
-    const r = rand();
-    if (actor.open) {
-      emit({ ...base, e: r < 0.06 ? 'PostToolUseFailure' : 'PostToolUse', tool: actor.open[0], tuid: actor.open[2], err: 'exit code 1' });
-      actor.open = null;
-    } else if (!actor.aid && r < 0.1 && s.subs.filter((x) => !x.done).length < 3) {
-      const [type, desc] = pick(SUBS);
-      const aid = `a${(n++).toString(36)}${Math.floor(rand() * 1e5).toString(36)}`;
-      emit({ ...base, e: 'PreToolUse', tool: 'Agent', step: `Delegando: ${desc}`, tuid: `d${aid}`, delegate: { type, desc } });
-      emit({ t, sid: s.sid, proj: s.proj, aid, at: type, e: 'SubagentStart' });
-      s.subs.push({ aid, at: type, done: false, born: t, parentTuid: `d${aid}` });
-    } else if (actor.aid && t - actor.born > 25000 / speed && r < 0.25) {
-      emit({ ...base, e: 'SubagentStop' });
-      actor.done = true;
-      emit({ t, sid: s.sid, proj: s.proj, e: 'PostToolUse', tool: 'Agent', tuid: actor.parentTuid });
-      setTimeout(() => (s.subs = s.subs.filter((x) => x !== actor)), 20000 / speed);
-    } else if (!actor.aid && r < 0.14) {
-      emit({ ...base, e: 'Notification', step: 'Aguardando permissão: Bash' });
-    } else {
-      const [tool, step] = pick(TOOLS);
-      const tuid = `t${(n++).toString(36)}`;
-      actor.open = [tool, step, tuid];
-      emit({ ...base, e: 'PreToolUse', tool, step, tuid });
+    if (s.phase === 'idle') {
+      if (t > s.idleUntil) startTask(s, t);
+      return;
     }
+    const st = s.stage;
+    const base = { t, sid: s.sid, proj: s.proj, aid: st.aid, at: st.at };
+    if (st.open) {
+      const fail = st.open[0] === 'Bash' && rand() < 0.08;
+      emit({ ...base, e: fail ? 'PostToolUseFailure' : 'PostToolUse', tool: st.open[0], tuid: st.open[2], err: 'exit code 1' });
+      st.open = null;
+      return;
+    }
+    if (st.ticks >= st.target) return finishStage(s, t);
+    const list = STAGE_TOOLS[st.key];
+    const [tool, step] = st.ticks < list.length && rand() < 0.7 ? list[st.ticks] : pick(list);
+    const tuid = `t${(n++).toString(36)}`;
+    st.open = [tool, step, tuid];
+    st.ticks++;
+    const skill = step.startsWith('Lendo skill ') ? step.slice(12) : undefined;
+    emit({ ...base, e: 'PreToolUse', tool, step, tuid, skill });
   };
-  const id = setInterval(tick, Math.max(120, 700 / speed));
+  const id = setInterval(tick, Math.max(90, 450 / speed));
   return () => clearInterval(id);
 }

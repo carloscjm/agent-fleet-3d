@@ -8,16 +8,20 @@ import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (p) => readFileSync(join(root, p), 'utf8');
-const strip = (src) => src.replace(/^export (?=(const|function|let|async))/gm, '');
-
-// One inline module: core + scene + app, with local imports removed (no name clashes at top level).
-const core = strip(read('shared/fleet-core.mjs'));
-const scene = strip(read('ui/scene.js'));
+// Wrap each module in its own function scope so top-level names (el, STATUS_PT…) can't clash,
+// then expose only its exports.
+function scoped(src) {
+  const names = [...src.matchAll(/^export (?:const|function|let|async function) ([A-Za-z0-9_$]+)/gm)].map((m) => m[1]);
+  const body = src.replace(/^import .*;$/gm, '').replace(/^export (?=(const|function|let|async))/gm, '');
+  return `const { ${names.join(', ')} } = (() => {\n${body}\nreturn { ${names.join(', ')} };\n})();`;
+}
+const coreSrc = read('shared/fleet-core.mjs');
+const sceneSrc = read('ui/scene.js');
 const app = read('ui/app.js')
   .replace(/^import .*?from '(\.\/scene\.js|\.\.\/shared\/fleet-core\.mjs)';\n/gm, '')
   .replace("if (params.has('demo'))", 'if (true)'); // no server here: always run the built-in demo
-const sceneImports = scene.match(/^import .*;$/gm).join('\n');
-const bundle = [sceneImports, core, scene.replace(/^import .*;$/gm, ''), app].join('\n');
+const sceneImports = sceneSrc.match(/^import .*;$/gm).join('\n');
+const bundle = [sceneImports, scoped(coreSrc), scoped(sceneSrc), app].join('\n');
 
 let html = read('ui/index.html');
 html = html.replace('<link rel="stylesheet" href="./styles.css" />', `<style>\n${read('ui/styles.css')}\n</style>`);
