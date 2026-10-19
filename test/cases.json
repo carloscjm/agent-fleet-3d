@@ -47,5 +47,6 @@
   ["shopify liquid theme development", ["shopify-developer"]],
   ["oi tudo bem?", []],
   ["obrigado!", []],
-  ["qual a capital da frança", []]
+  ["qual a capital da frança", []],
+  ["Leia o bug PROJ-123 no Jira e passe a correção pelo pipeline do agent-fleet-3d.", ["jira-assistant"]]
 ]

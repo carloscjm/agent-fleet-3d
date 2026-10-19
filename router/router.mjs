@@ -97,7 +97,11 @@ export function route(prompt, opts = {}) {
   if (trimmed.startsWith('/') && !opts.force) return { mode: 'none', reason: 'slash-command', ranked: [] };
   if (terms(trimmed).length < 2 && !opts.force) return { mode: 'none', reason: 'too-short', ranked: [] };
 
-  const ranked = score(trimmed, index);
+  // Mentions of this plugin's own pipeline are about delivery stages, not sales pipelines (GTM skills).
+  const scrubbed = /agent-fleet/i.test(trimmed)
+    ? trimmed.replace(/\/?agent-fleet-3d(:\w+)?/gi, ' ').replace(/\b(pipeline|fluxo|esteira)\b/gi, ' ')
+    : trimmed;
+  const ranked = score(scrubbed, index);
   const top = ranked[0];
   if (!top || top.score < o.minScore) return { mode: 'none', reason: 'low-confidence', ranked };
   const second = ranked[1]?.score || 0;
