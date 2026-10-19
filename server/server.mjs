@@ -3,7 +3,7 @@
 // Usage: node server/server.mjs [--port 4317] [--demo] [--open]
 import http from 'node:http';
 import { createReadStream, readFileSync, existsSync, statSync, openSync, readSync, closeSync, writeFileSync, mkdirSync } from 'node:fs';
-import { join, extname, normalize, dirname } from 'node:path';
+import { join, extname, dirname, posix, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { exec } from 'node:child_process';
 import { createState, apply, listProjects, projectDetail, startDemo } from '../shared/fleet-core.mjs';
@@ -13,7 +13,14 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
 const flag = (n) => args.includes(n);
 const opt = (n, d) => (args.indexOf(n) >= 0 ? args[args.indexOf(n) + 1] : d);
-const PORT = Number(opt('--port', process.env.AGENT_FLEET_PORT || 4317));
+let PORT = Number(opt('--port', process.env.AGENT_FLEET_PORT || 4317));
+const VERSION = (() => {
+  try {
+    return JSON.parse(readFileSync(join(root, '.claude-plugin', 'plugin.json'), 'utf8')).version || 'dev';
+  } catch {
+    return 'dev';
+  }
+})();
 const DEMO = flag('--demo');
 
 const state = createState();
@@ -87,7 +94,7 @@ const json = (res, code, body) => {
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://localhost');
   const p = url.pathname;
-  if (p === '/api/health') return json(res, 200, { ok: true, demo: DEMO, events: EVENTS });
+  if (p === '/api/health') return json(res, 200, { ok: true, app: 'agent-fleet-3d', version: VERSION, demo: DEMO, events: EVENTS });
   if (p === '/api/projects') return json(res, 200, { now: Date.now(), demo: DEMO, projects: listProjects(state, Date.now(), { includeInactive: url.searchParams.has('all') }), routes: state.routes });
   if (p.startsWith('/api/projects/')) {
     const d = projectDetail(state, decodeURIComponent(p.slice(14)), Date.now());
@@ -109,30 +116,50 @@ const server = http.createServer((req, res) => {
     res.writeHead(302, { location: '/ui/' });
     return res.end();
   }
-  let file = p.endsWith('/') ? p + 'index.html' : p;
-  file = normalize(file).replace(/^(\.\.[/\\])+/, '');
+  // URL paths always use "/", so normalize with posix rules (path.normalize would turn them into "\" on Windows).
+  let file;
+  try {
+    file = posix.normalize(decodeURIComponent(p.endsWith('/') ? p + 'index.html' : p));
+  } catch {
+    return json(res, 400, { error: 'bad path' });
+  }
   if (!file.startsWith('/ui/') && !file.startsWith('/shared/')) return json(res, 404, { error: 'not found' });
-  const abs = join(root, file);
-  if (!existsSync(abs) || statSync(abs).isDirectory()) return json(res, 404, { error: 'not found' });
+  const abs = join(root, ...file.split('/').filter(Boolean));
+  if (!abs.startsWith(root + sep) || !existsSync(abs) || statSync(abs).isDirectory()) return json(res, 404, { error: 'not found' });
   res.writeHead(200, { 'content-type': TYPES[extname(abs)] || 'application/octet-stream', 'cache-control': 'no-cache' });
   createReadStream(abs).pipe(res);
 });
 
-server.on('error', (e) => {
-  if (e.code === 'EADDRINUSE') {
-    console.log(`Agent Fleet já está rodando em http://localhost:${PORT}`);
-    process.exit(0);
+// Port busy: reuse it if it is this same version, otherwise move to the next free port
+// (an older copy of the server may still be running from a previous plugin version).
+let tries = 0;
+server.on('error', async (e) => {
+  if (e.code !== 'EADDRINUSE') throw e;
+  try {
+    const r = await fetch(`http://127.0.0.1:${PORT}/api/health`);
+    const h = await r.json();
+    if (h.app === 'agent-fleet-3d' && h.version === VERSION) {
+      console.log(`Agent Fleet 3D já está rodando: http://localhost:${PORT}`);
+      process.exit(0);
+    }
+  } catch {}
+  if (++tries > 10) {
+    console.log('Não encontrei porta livre entre 4317 e 4327.');
+    process.exit(1);
   }
-  throw e;
+  PORT++;
+  server.listen(PORT, '127.0.0.1');
 });
 
-server.listen(PORT, '127.0.0.1', () => {
+server.on('listening', () => {
   mkdirSync(HOME, { recursive: true });
   writeFileSync(join(HOME, 'server.pid'), String(process.pid));
   const url = `http://localhost:${PORT}`;
-  console.log(`Agent Fleet 3D → ${url}${DEMO ? ' (demo)' : ''}\nlendo eventos de ${EVENTS}`);
+  console.log(`Agent Fleet 3D: ${url}${DEMO ? ' (demo)' : ''}\nlendo eventos de ${EVENTS}`);
   if (flag('--open')) {
     const cmd = process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'start ""' : 'xdg-open';
     exec(`${cmd} ${url}`);
   }
 });
+
+server.listen(PORT, '127.0.0.1');

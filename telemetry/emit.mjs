@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Hook handler for agent activity. Runs async (non-blocking) and appends one compact event per hook.
-import { basename } from 'node:path';
+import { basename, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { readStdin, appendEvent, projectOf, loadSessions, saveSessions } from './common.mjs';
 
 const clip = (s, n = 70) => {
@@ -90,7 +91,10 @@ export function toEvent(h) {
   return ev;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+// Run as a hook script (not when imported by tests). Compare file paths, ignoring case and
+// separators on Windows, where argv uses "C:\..." and import.meta.url uses "file:///C:/...".
+const norm = (p) => (process.platform === 'win32' ? resolve(p).toLowerCase() : resolve(p));
+if (process.argv[1] && norm(fileURLToPath(import.meta.url)) === norm(process.argv[1])) {
   try {
     const h = await readStdin();
     appendEvent(toEvent(h));

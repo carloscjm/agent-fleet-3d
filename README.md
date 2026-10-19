@@ -10,7 +10,7 @@
 ![Node 18+](https://img.shields.io/badge/node-%E2%89%A518-15304b)
 ![Zero dependências](https://img.shields.io/badge/depend%C3%AAncias-0-138a7d)
 ![94 skills](https://img.shields.io/badge/skills%20TLC-94-c98500)
-![Testes](https://img.shields.io/badge/testes-6%2F6-138a7d) ![Versão](https://img.shields.io/badge/vers%C3%A3o-0.2.0-1b3a59)
+![Testes](https://img.shields.io/badge/testes-6%2F6-138a7d) ![Versão](https://img.shields.io/badge/vers%C3%A3o-0.2.1-1b3a59)
 ![Licença MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-647d99)
 
 <img src="docs/media/demo.gif" alt="Dashboard: lista de projetos à esquerda, agentes orbitando o projeto selecionado em 3D, troca para a visão em trilhas e abertura da linha do tempo de um agente" width="860" />
