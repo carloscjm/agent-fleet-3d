@@ -8,7 +8,7 @@ description: Finds the right Tech Leads Club skill (94 bundled, in skills-librar
 The plugin's `UserPromptSubmit` hook already routes most prompts and injects a one-line `Skill router:` hint with the SKILL.md path. Use this skill only when no hint arrived and a playbook would clearly help.
 
 1. Run the local router (pure keyword index, ~1 ms, no model tokens):
-   `node <plugin root>/router/route-cli.mjs "<short task description in English or Portuguese>" --top 3`
-   The plugin root is two directories above this SKILL.md.
+   `node "${CLAUDE_PLUGIN_ROOT}/router/route-cli.mjs" "<short task description in English or Portuguese>" --top 3`
+   The plugin root is `${CLAUDE_PLUGIN_ROOT}`.
 2. Read **only** the SKILL.md it prints. Open that skill's `references/` or `scripts/` files only when a step asks for them.
 3. If it reports no match, continue without a skill. Do not browse `skills-library/` manually.

@@ -10,7 +10,7 @@
 ![Node 18+](https://img.shields.io/badge/node-%E2%89%A518-15304b)
 ![Zero dependências](https://img.shields.io/badge/depend%C3%AAncias-0-138a7d)
 ![94 skills](https://img.shields.io/badge/skills%20TLC-94-c98500)
-![Testes](https://img.shields.io/badge/testes-6%2F6-138a7d)
+![Testes](https://img.shields.io/badge/testes-6%2F6-138a7d) ![Versão](https://img.shields.io/badge/vers%C3%A3o-0.1.1-1b3a59)
 ![Licença MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-647d99)
 
 <img src="docs/media/demo.gif" alt="Dashboard: lista de projetos à esquerda, agentes orbitando o projeto selecionado em 3D, troca para a visão em trilhas e abertura da linha do tempo de um agente" width="860" />
@@ -121,7 +121,7 @@ Clique em um agente, na cena ou na lista da direita, para ver a linha do tempo. 
 | --- | --- |
 | `/agent-fleet-3d:fleet` | Abre o dashboard |
 | `/agent-fleet-3d:fleet demo` | Abre o dashboard com dados simulados |
-| `/agent-fleet-3d:skill <tarefa>` | Pergunta ao roteador qual skill usar e aplica |
+| `/agent-fleet-3d:find-skill <tarefa>` | Pergunta ao roteador qual skill usar e aplica |
 
 ## Como funciona
 
@@ -326,8 +326,7 @@ npm run sync:skills   # baixa a versão mais nova das skills da TLC
 ```
 .claude-plugin/    plugin.json e marketplace.json
 hooks/hooks.json   roteador (síncrono) + telemetria (assíncrona)
-commands/          /fleet e /skill
-skills/            skill-router, fallback manual do roteador
+skills/            fleet, find-skill e skill-router
 skills-library/    94 skills do Tech Leads Club, por categoria
 router/            índice, pontuação, hook e CLI
 telemetry/         captura de eventos dos hooks
@@ -368,7 +367,7 @@ Separar os passos por subagente depende dos campos `agent_id` e `agent_type` que
 <details>
 <summary><b>A skill sugerida não foi a ideal</b></summary>
 
-O roteador é lexical: entende bem pedidos que usam o vocabulário das skills e menos bem pedidos muito indiretos. Em caso de dúvida ele oferece uma lista curta ou não sugere nada. Use `/agent-fleet-3d:skill <tarefa>` para forçar uma busca, ou cite o nome da skill no pedido. Veja também [como melhorar o roteamento](#roteador-de-skills).
+O roteador é lexical: entende bem pedidos que usam o vocabulário das skills e menos bem pedidos muito indiretos. Em caso de dúvida ele oferece uma lista curta ou não sugere nada. Use `/agent-fleet-3d:find-skill <tarefa>` para forçar uma busca, ou cite o nome da skill no pedido. Veja também [como melhorar o roteamento](#roteador-de-skills).
 
 </details>
 

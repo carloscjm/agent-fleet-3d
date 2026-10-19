@@ -1,8 +1,21 @@
 {
   "name": "agent-fleet-3d",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Gerenciador de agentes: lista de projetos ativos + visualização 3D dos agentes e do passo atual, com roteador de skills (catálogo Tech Leads Club) que gasta o mínimo de tokens.",
-  "author": { "name": "Carlos", "email": "carloscjm9@gmail.com" },
+  "author": {
+    "name": "Carlos",
+    "email": "carloscjm9@gmail.com"
+  },
   "license": "MIT",
-  "keywords": ["agents", "dashboard", "3d", "skills", "router", "observability"]
+  "keywords": [
+    "agents",
+    "dashboard",
+    "3d",
+    "skills",
+    "router",
+    "observability"
+  ],
+  "displayName": "Agent Fleet 3D",
+  "repository": "https://github.com/carloscjm/agent-fleet-3d",
+  "homepage": "https://github.com/carloscjm/agent-fleet-3d"
 }

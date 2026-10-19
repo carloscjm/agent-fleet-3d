@@ -1,6 +1,8 @@
 ---
-description: Encontra a skill TLC mais adequada para uma tarefa (roteamento local, sem gastar tokens de catálogo)
+name: find-skill
+description: Encontra a skill do Tech Leads Club mais adequada para uma tarefa usando o roteador local, sem carregar o catálogo de 94 skills.
 argument-hint: "<descrição da tarefa>"
+disable-model-invocation: true
 allowed-tools: Bash(node:*), Read
 ---
 
