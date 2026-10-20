@@ -10,10 +10,10 @@
 ![Node 18+](https://img.shields.io/badge/node-%E2%89%A518-15304b)
 ![Zero dependências](https://img.shields.io/badge/depend%C3%AAncias-0-138a7d)
 ![94 skills](https://img.shields.io/badge/skills%20TLC-94-c98500)
-![Testes](https://img.shields.io/badge/testes-13%2F13-138a7d) ![Versão](https://img.shields.io/badge/vers%C3%A3o-0.4.0-1b3a59)
+![Testes](https://img.shields.io/badge/testes-14%2F14-138a7d) ![Versão](https://img.shields.io/badge/vers%C3%A3o-0.5.0-1b3a59)
 ![Licença MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-647d99)
 
-<img src="docs/media/demo.gif" alt="Dashboard: lista de chats agrupada por data à esquerda, histórico do chat selecionado como uma esteira 3D com prompts, ferramentas e subagentes, e a troca para a visão do pipeline" width="860" />
+<img src="docs/media/demo.gif" alt="Dashboard: lista de chats à esquerda, o histórico do chat selecionado como uma esteira 3D com balões para os pedidos e ícones para cada ação, a visão do pipeline e o agrupamento por status" width="860" />
 
 [Instalar](#instalação) · [Usar](#uso) · [Pipeline](#o-pipeline) · [Como funciona](#como-funciona) · [Roteador de skills](#roteador-de-skills) · [Visualizações](#visualizações) · [Desenvolvimento](#desenvolvimento)
 
@@ -28,7 +28,7 @@ Um plugin do Claude Code com três partes que trabalham juntas:
 | | O que faz |
 | --- | --- |
 | **Pipeline de agentes** | `/agent-fleet-3d:pipeline <tarefa>` passa a tarefa por quatro agentes em sequência: o **Tech Lead** planeja, o **Engenheiro** implementa, o **QA** testa e o **DevOps** sobe para o git. Se o QA reprovar, a tarefa volta para o Engenheiro, até duas vezes. |
-| **Histórico em 3D** | À esquerda, **todos os chats do Claude Code salvos no computador**, inclusive os que nunca usaram o plugin, com busca, agrupamento por data ou projeto e filtros. Ao clicar num chat, o histórico dele vira uma esteira em 3D: cada prompt é um anel, cada ferramenta usada é um cubo colorido pelo tipo, e cada subagente sai da esteira num ramal. |
+| **Histórico em 3D** | À esquerda, **todos os chats do Claude Code salvos no computador**, inclusive os que nunca usaram o plugin, com busca, agrupamento por data, projeto ou **status** e filtros. Ao clicar num chat, o histórico dele vira uma esteira em 3D: cada pedido seu é um balão, cada ação do Claude é um ícone (página para leitura, lápis para edição, terminal para comando, globo para web, livro para skill…) e cada agente ajudante é um robô que sai da esteira. O painel da direita explica tudo em português simples. |
 | **Pipeline em 3D** | Nos chats que rodaram o pipeline, o botão **Pipeline** mostra as quatro estações ligadas por uma esteira, a etapa atual, o tempo de cada uma e o retrabalho quando o QA reprova. Funciona ao vivo e também para chats antigos. |
 | **Roteador de skills** | As 94 skills do [Tech Leads Club](https://agent-skills.techleads.club/skills/) ficam no plugin. Cada agente do pipeline usa as dele, e nos seus pedidos comuns um índice local escolhe a skill certa. Carregar o catálogo inteiro custaria cerca de 12.700 tokens por sessão; uma sugestão custa de 60 a 200, e nada quando nenhuma skill se aplica. |
 
@@ -38,20 +38,28 @@ Tudo roda na sua máquina: o dashboard só aceita conexões do próprio computad
 
 <table>
   <tr>
-    <td width="50%"><img src="docs/media/historico.png" alt="Histórico de um chat com três prompts: anéis na esteira e cubos coloridos para cada ferramenta; à direita, o prompt selecionado com a resposta e a lista de ferramentas" /></td>
-    <td width="50%"><img src="docs/media/historico-pipeline.png" alt="Histórico de um chat que rodou o pipeline: cada subagente sai da esteira com a forma da sua etapa, e o QA reprovado aparece em vermelho" /></td>
+    <td width="50%"><img src="docs/media/historico.png" alt="Histórico de um chat com três pedidos: balões na esteira e ícones coloridos para cada ação; à direita, o pedido selecionado com o resumo, a resposta e o passo a passo" /></td>
+    <td width="50%"><img src="docs/media/historico-pipeline.png" alt="Histórico de um chat que rodou o pipeline: cada agente sai da esteira com o ícone da sua etapa, e o QA reprovado aparece em vermelho" /></td>
   </tr>
   <tr>
-    <td><b>Histórico.</b> Cada anel é um prompt; os cubos depois dele são as ferramentas, na ordem em que rodaram. Passe o mouse para ver o passo; clique para abrir o prompt.</td>
-    <td><b>Subagentes.</b> Cada subagente sai da esteira num ramal. As etapas do pipeline usam as formas das estações e mostram o veredito do QA.</td>
+    <td><b>Histórico.</b> Cada balão é um pedido seu; os ícones depois dele mostram o que o Claude fez, na ordem. À direita, um resumo em frases simples ("Leu 2 arquivos, editou 1 arquivo…") e o passo a passo com ícones.</td>
+    <td><b>Agentes ajudantes.</b> Cada agente sai da esteira com o seu ícone: prancheta para o Tech Lead, engrenagem para o Engenheiro, escudo para o QA e foguete para o DevOps. O QA reprovado aparece em vermelho.</td>
   </tr>
   <tr>
     <td><img src="docs/media/retrabalho.png" alt="Visão do pipeline do mesmo chat: estações Tech Lead, Engenheiro, QA e DevOps, com o caminho de retrabalho do QA de volta ao Engenheiro" /></td>
-    <td><img src="docs/media/agrupar-filtrar.png" alt="Lista de chats agrupada por projeto e filtrada para mostrar só chats com pipeline" /></td>
+    <td><img src="docs/media/agrupar-status.png" alt="Lista de chats agrupada por status: Trabalhando agora, Barrado nos testes, Terminou com erro e Entregue no Git" /></td>
   </tr>
   <tr>
-    <td><b>Pipeline.</b> As quatro etapas com tempo, tentativas e o retrabalho quando o QA reprova.</td>
-    <td><b>Agrupar e filtrar.</b> Por data ou por projeto, e só os ativos, com pipeline, sem pipeline ou com erros.</td>
+    <td><b>Pipeline.</b> Seu pedido passa pelas quatro estações; cada uma diz o que fez ("Planejou em 48s", "Aprovou em 2 min") e o caminho de retrabalho aparece quando o QA reprova.</td>
+    <td><b>Agrupar por status.</b> Primeiro o que precisa de você: esperando sua resposta, trabalhando agora, barrado nos testes, terminou com erro, entregue no Git e concluído.</td>
+  </tr>
+  <tr>
+    <td><img src="docs/media/agrupar-filtrar.png" alt="Lista de chats agrupada por projeto e filtrada para mostrar só chats com pipeline" /></td>
+    <td><img src="docs/media/tema-claro.png" alt="O mesmo dashboard no tema claro" /></td>
+  </tr>
+  <tr>
+    <td><b>Agrupar e filtrar.</b> Por data, projeto ou status, e só os ativos, com pipeline, sem pipeline ou com erros.</td>
+    <td><b>Tema claro.</b> Segue o tema do sistema.</td>
   </tr>
 </table>
 
@@ -93,25 +101,43 @@ A coluna da esquerda lista todos os chats do Claude Code salvos no computador: a
 | Controle | O que faz |
 | --- | --- |
 | **Buscar chats** | Procura no título, no projeto, na branch, nos prompts e nas skills usadas. Ignora acentos |
-| **Agrupar** | Por data (Hoje, Ontem, Últimos 7 dias, Últimos 30 dias, meses), por projeto, ou sem grupos. Clique no nome do grupo para recolher |
+| **Agrupar** | Por data (Hoje, Ontem, Últimos 7 dias, Últimos 30 dias, meses), por projeto, **por status** ou sem grupos. Clique no nome do grupo para recolher |
 | **Mostrar** | Todos, só os ativos agora, só os que rodaram o pipeline, só os que não rodaram, ou só os que tiveram erros |
 
-A escolha de agrupamento e filtro fica salva no navegador. Chats ativos têm um ponto colorido com o estado atual.
+A escolha de agrupamento e filtro fica salva no navegador. Cada chat mostra o status dele em uma etiqueta colorida. No agrupamento **Por status**, os grupos aparecem nesta ordem, primeiro o que precisa de você:
+
+| Status | Quando |
+| --- | --- |
+| 🟡 Esperando sua resposta | O Claude parou e está aguardando você |
+| 🟠 Trabalhando agora | O chat está rodando neste momento |
+| 🔴 Barrado nos testes | O QA reprovou e a entrega não foi para o Git |
+| 🔴 Terminou com erro | Alguma ação do último pedido falhou |
+| 🟢 Entregue no Git | Passou pelo pipeline inteiro e o DevOps enviou |
+| ⚪ Concluído | Conversa encerrada sem pendências |
 
 ### 3. Leia o histórico
 
-| Na cena | Significa |
+Cada ação tem um ícone em 3D, e a legenda embaixo da cena usa os mesmos ícones:
+
+| Ícone | Significa |
 | --- | --- |
-| Anel dourado | Um prompt seu. O selecionado brilha e mostra o texto |
-| Cubo cinza | Leitura: `Read`, `Grep`, `Glob` |
-| Cubo verde-água | Edição: `Edit`, `Write` |
-| Cubo âmbar | Comando no terminal |
-| Cubo rosa | Busca ou página da web |
-| Cubo vermelho | Ferramenta que falhou |
-| Ramal com forma | Subagente; as formas de Tech Lead, Engenheiro, QA e DevOps são as das estações do pipeline |
+| 💬 Balão dourado | Um pedido seu. O selecionado brilha e mostra o texto |
+| 📄 Página azul | Leu um arquivo |
+| 🔍 Lupa | Buscou no código (procurar texto, listar arquivos) |
+| ✏️ Lápis | Editou um arquivo |
+| 📄➕ Página com sinal de mais | Criou um arquivo novo |
+| `>_` Terminal | Rodou um comando |
+| 🌐 Globo | Pesquisou ou abriu uma página na web |
+| 📖 Livro aberto | Consultou uma skill (manual de instruções) |
+| 📋 Prancheta | Atualizou a lista de tarefas |
+| 🔌 Tomada | Usou um conector (Jira, GitHub, Slack…) |
+| 🤖 Robô | Um agente ajudante que o Claude chamou |
+| Ícone vermelho | Aquela ação deu erro |
 | Ponto pulsando no fim | O chat está ativo agora |
 
-A esteira faz curvas quando o chat é longo, então o começo fica na frente e o fim lá atrás. Clique num anel ou num prompt do painel para ver a resposta, os subagentes e cada ferramenta com a duração.
+Os agentes do pipeline usam os ícones das estações: prancheta (Tech Lead), engrenagem (Engenheiro), escudo (QA) e foguete (DevOps).
+
+A esteira faz curvas quando o chat é longo, então o começo fica na frente e o fim lá atrás. Clique num balão ou num pedido do painel. O painel explica em português simples o que você pediu, um resumo do que o Claude fez ("Leu 3 arquivos, editou 2 arquivos e rodou 1 comando."), o que ele respondeu, quais agentes ajudaram e o passo a passo, com ícone e duração de cada ação.
 
 ### 4. Rode uma tarefa pelo pipeline
 
@@ -123,11 +149,14 @@ O chat aparece no topo da lista. Use o botão **Pipeline** para ver as estaçõe
 
 | No pipeline | Significa |
 | --- | --- |
-| Estação apagada | Etapa ainda não começou |
-| Estação âmbar girando, com anel | Etapa em andamento; o cartão mostra o passo atual |
-| Estação turquesa | Etapa concluída, com o tempo que levou |
-| Estação vermelha e caminho no chão | QA reprovou; a tarefa volta para o Engenheiro |
-| Repositório turquesa no fim | DevOps terminou: commit enviado e PR aberto |
+| 💬 Balão no começo | Seu pedido, que entra no pipeline |
+| 📋 Prancheta, ⚙️ engrenagem, 🛡️ escudo, 🚀 foguete | As estações do Tech Lead, Engenheiro, QA e DevOps |
+| Ícone apagado | A etapa ainda não começou; o cartão diz o que ela vai fazer ("Vai testar") |
+| Ícone âmbar girando, com anel | Etapa em andamento; o cartão mostra o passo atual |
+| Ícone turquesa | Etapa concluída; o cartão diz o que fez e quanto levou ("Planejou em 48s") |
+| Ícone vermelho e caminho no chão | O QA reprovou; o trabalho volta para o Engenheiro corrigir |
+| Ícone de branch no fim | O Git: fica turquesa quando o DevOps enviou o commit e abriu o PR |
+| Ícones pequenos atrás da estação | As últimas ações daquela etapa |
 
 ### Comandos
 

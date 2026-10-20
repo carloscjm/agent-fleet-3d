@@ -19,6 +19,16 @@
   --error: #f2665c;
   --idle: #6f86a3;
   --focus: #ffd98a;
+  --c-read: #8fb4e8;
+  --c-search: #6fc3e8;
+  --c-edit: #7fd1c7;
+  --c-write: #9be08a;
+  --c-exec: #f2b33d;
+  --c-web: #e58ac0;
+  --c-skill: #b79cf2;
+  --c-task: #c9d6e6;
+  --c-mcp: #f0a37a;
+  --c-agent: #e8eff7;
   --font-ui: 'Barlow', system-ui, sans-serif;
   --font-head: 'Barlow Semi Condensed', 'Barlow', system-ui, sans-serif;
   --font-code: 'IBM Plex Mono', ui-monospace, monospace;
@@ -41,6 +51,16 @@
     --error: #d1453b;
     --idle: #7a8ea6;
     --focus: #b36b00;
+    --c-read: #3a6fb8;
+    --c-search: #1f86b0;
+    --c-edit: #138a7d;
+    --c-write: #3d8a2e;
+    --c-exec: #c98500;
+    --c-web: #b8448a;
+    --c-skill: #7a52c9;
+    --c-task: #5a6f88;
+    --c-mcp: #c2622c;
+    --c-agent: #142a44;
     color-scheme: light;
   }
 }
@@ -61,6 +81,16 @@
   --idle: #7a8ea6;
   --focus: #b36b00;
   color-scheme: light;
+  --c-read: #3a6fb8;
+  --c-search: #1f86b0;
+  --c-edit: #138a7d;
+  --c-write: #3d8a2e;
+  --c-exec: #c98500;
+  --c-web: #b8448a;
+  --c-skill: #7a52c9;
+  --c-task: #5a6f88;
+  --c-mcp: #c2622c;
+  --c-agent: #142a44;
 }
 
 * { box-sizing: border-box; }
@@ -176,8 +206,11 @@ button { font: inherit; color: inherit; }
   display: flex; gap: 14px; flex-wrap: wrap;
   font-size: 12.5px; color: var(--ink-2);
 }
-.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend { gap: 6px 14px; max-width: calc(100% - 400px); }
+.legend span { display: inline-flex; align-items: center; gap: 5px; }
 .legend i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.legend .ic svg { width: 16px; height: 16px; }
+.legend .sep { width: 1px; height: 14px; background: var(--line); }
 
 .placeholder {
   inset: 0; display: grid; place-items: center; text-align: center; color: var(--ink-2);
@@ -314,8 +347,13 @@ button { font: inherit; color: inherit; }
 .stages { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; counter-reset: st; }
 .stage-btn {
   width: 100%; text-align: left; background: none; border: 0; border-radius: 7px; cursor: pointer;
-  padding: 6px 8px; display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; gap: 2px 10px; align-items: center;
+  padding: 6px 8px; display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 2px 10px; align-items: center;
 }
+.stage-btn .ic { grid-row: span 2; color: var(--idle); }
+.stage-btn.active .ic { color: var(--running); filter: drop-shadow(0 0 5px var(--running)); }
+.stage-btn.done .ic { color: var(--thinking); }
+.stage-btn.failed .ic { color: var(--error); }
+.stage-btn.pending .s { white-space: normal; font-family: inherit; color: var(--ink-3); }
 .stage-btn:hover { background: var(--panel-2); }
 .stage-btn .dot { background: var(--idle); opacity: .55; }
 .stage-btn.active .dot { background: var(--running); box-shadow: 0 0 8px var(--running); opacity: 1; }
@@ -359,7 +397,7 @@ button { font: inherit; color: inherit; }
 .chat .name { font: 500 14.5px/1.25 var(--font-ui); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .chat .when { font-size: 12px; color: var(--ink-3); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .cmeta { display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--ink-3); min-width: 0; }
-.cmeta .proj { color: var(--ink-2); }
+.cmeta .proj { color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cmeta .branch { font-family: var(--font-code); font-size: 11.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cmeta .counts { margin-left: auto; white-space: nowrap; }
 .chat .step { font: 12px/1.35 var(--font-code); color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -383,9 +421,10 @@ button { font: inherit; color: inherit; }
 .turn-detail .full-prompt { margin: 4px 0 6px; font-size: 13px; color: var(--ink-2); white-space: pre-wrap; overflow-wrap: anywhere; }
 .turn-detail .reply { margin: 2px 0 6px; font-size: 13px; color: var(--ink-2); overflow-wrap: anywhere; }
 .turn-detail .timeline { padding: 0 2px; }
-.agent-row { display: grid; grid-template-columns: 12px minmax(0, 1fr); gap: 1px 10px; align-items: center; padding: 4px 2px; }
-.agent-row .dot { grid-column: 1; grid-row: 1 / span 4; align-self: start; margin-top: 5px; }
-.agent-row > :not(.dot) { grid-column: 2; }
+.agent-row { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 1px 10px; align-items: center; padding: 5px 2px; }
+.agent-row .ic { grid-column: 1; grid-row: 1 / span 4; align-self: start; }
+.agent-row > :not(.ic) { grid-column: 2; }
+.agent-row.error .ic { color: var(--error); }
 .agent-row .n { font-weight: 600; font-size: 13.5px; }
 .agent-row .s { font: 12px var(--font-code); color: var(--ink-2); overflow-wrap: anywhere; }
 .agent-row .s.fail { color: var(--error); }
@@ -403,6 +442,56 @@ button { font: inherit; color: inherit; }
 }
 .tip b { font: 600 12.5px/1.3 var(--font-code); color: var(--ink); overflow-wrap: anywhere; }
 .tip .err { color: var(--error); }
+
+/* ---------------------------------------------------------------- icons (2D twins of the 3D ones) */
+.ic { display: inline-grid; place-items: center; width: 22px; height: 22px; color: var(--ink-2); flex: none; }
+.ic svg { display: block; }
+.ic.c-read { color: var(--c-read); }
+.ic.c-search { color: var(--c-search); }
+.ic.c-edit { color: var(--c-edit); }
+.ic.c-write { color: var(--c-write); }
+.ic.c-exec { color: var(--c-exec); }
+.ic.c-web { color: var(--c-web); }
+.ic.c-skill { color: var(--c-skill); }
+.ic.c-task { color: var(--c-task); }
+.ic.c-mcp { color: var(--c-mcp); }
+.ic.c-agent { color: var(--c-agent); }
+.ic.c-prompt { color: var(--focus); }
+.ic.c-error { color: var(--error); }
+.ic.c-other { color: var(--ink-3); }
+.drawer h3.with-ic { display: flex; align-items: center; gap: 8px; }
+
+/* friendly explanations in the side panel */
+#d-head p.how { font-size: 12.5px; color: var(--ink-3); line-height: 1.45; }
+.turn-detail .summary { margin: 4px 0 8px; padding: 7px 10px; border-radius: 8px; background: var(--panel-2); font-size: 13px; color: var(--ink); line-height: 1.4; }
+
+/* step list: icon + what happened + kind · time */
+.steps { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 2px; }
+.steps li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; align-items: start; padding: 5px 2px; border-radius: 6px; }
+.steps li:hover { background: var(--panel-2); }
+.steps li.error { background: color-mix(in srgb, var(--error) 9%, transparent); }
+.steps li.running .ic { filter: drop-shadow(0 0 5px var(--running)); }
+.steps .t { font-size: 13px; line-height: 1.35; overflow-wrap: anywhere; }
+.steps .m { font-size: 11.5px; color: var(--ink-3); }
+.steps .err { color: var(--error); font-size: 12px; overflow-wrap: anywhere; }
+.facts + .sub-h.pad { margin-top: 14px; }
+.drawer .steps { padding: 0 8px; }
+.turn-detail .steps { padding: 0; }
+
+/* status badge in the chat list and the title */
+.cstat { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; font-weight: 500; }
+.cstat.running { color: var(--running); }
+.cstat.waiting { color: var(--waiting); }
+.cstat.error { color: var(--error); }
+.cstat.thinking { color: var(--thinking); }
+.group-h .dot { flex: none; }
+.chip.st.thinking { border-color: var(--thinking); }
+.chip.st b { font-size: 10px; }
+.chip.st.running b { color: var(--running); }
+.chip.st.waiting b { color: var(--waiting); }
+.chip.st.error b { color: var(--error); }
+.chip.st.thinking b { color: var(--thinking); }
+.chip.st.idle b { color: var(--ink-3); }
 
 </style>
   <script type="importmap">
@@ -422,6 +511,7 @@ button { font: inherit; color: inherit; }
           <select id="group">
             <option value="date">Por data</option>
             <option value="project">Por projeto</option>
+            <option value="status">Por status</option>
             <option value="none">Sem grupos</option>
           </select>
         </label>
@@ -471,80 +561,117 @@ button { font: inherit; color: inherit; }
       <div class="body" id="d-body"></div>
     </section>
 
-    <div class="overlay legend" id="legend-history" aria-hidden="true">
-      <span><i style="background:var(--focus)"></i>Prompt</span>
-      <span><i style="background:var(--ink-3)"></i>Leitura</span>
-      <span><i style="background:var(--thinking)"></i>Edição</span>
-      <span><i style="background:var(--running)"></i>Comando</span>
-      <span><i style="background:var(--waiting)"></i>Web</span>
-      <span><i style="background:var(--ink)"></i>Subagente</span>
-      <span><i style="background:var(--error)"></i>Erro</span>
-    </div>
-    <div class="overlay legend" id="legend-pipeline" aria-hidden="true" hidden>
-      <span><i style="background:var(--idle)"></i>Aguardando</span>
-      <span><i style="background:var(--running)"></i>Em andamento</span>
-      <span><i style="background:var(--thinking)"></i>Concluído</span>
-      <span><i style="background:var(--error)"></i>Reprovado ou erro</span>
-      <span><i style="background:var(--waiting)"></i>Aguardando você</span>
-    </div>
+    <div class="overlay legend" id="legend-history" aria-hidden="true"></div>
+    <div class="overlay legend" id="legend-pipeline" aria-hidden="true" hidden></div>
   </main>
 
   <script type="module">
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
-const { clip, summarize, skillOf, category } = (() => {
-// Isomorphic helpers that turn a tool call into a short, readable step (used by hooks and the history reader).
+const { clip, category, KIND_PT, agentLabel, summarize, skillOf } = (() => {
+// Isomorphic helpers that turn a tool call into a short, readable step in Portuguese
+// (used by the hooks, the history reader and the dashboard).
 const clip = (s, n = 70) => {
   s = String(s ?? '').replace(/\s+/g, ' ').trim();
   return s.length > n ? s.slice(0, n - 1) + '…' : s;
 };
 
 const base = (p) => String(p || '').split(/[/\\]/).pop();
+const skillDir = (p) => (String(p || '').match(/([^/\\]+)[/\\]SKILL\.md$/) || [])[1] || null;
 
+/** What kind of action a tool call is. Drives the 3D icon, the color and the label. */
+function category(tool = '', input = {}) {
+  input = input || {};
+  if (tool === 'Skill' || (tool === 'Read' && skillDir(input.file_path))) return 'skill';
+  if (tool === 'Read' || tool === 'NotebookRead') return 'read';
+  if (/^(Grep|Glob|LS|ToolSearch)$/.test(tool)) return 'search';
+  if (tool === 'Write') return 'write';
+  if (/^(Edit|MultiEdit|NotebookEdit)$/.test(tool)) return 'edit';
+  if (tool === 'Bash' || tool === 'PowerShell' || tool === 'BashOutput' || tool === 'KillShell') return 'exec';
+  if (/^Web/.test(tool)) return 'web';
+  if (tool === 'Agent' || tool === 'Task') return 'delegate';
+  if (/^(TodoWrite|TaskCreate|TaskUpdate|TaskList|TaskGet)$/.test(tool)) return 'task';
+  if (tool.startsWith('mcp__')) return 'mcp';
+  return 'other';
+}
+
+const KIND_PT = {
+  read: 'Leitura de arquivo',
+  search: 'Busca no código',
+  edit: 'Edição de arquivo',
+  write: 'Arquivo novo',
+  exec: 'Comando no terminal',
+  web: 'Pesquisa na web',
+  skill: 'Skill (manual de instruções)',
+  task: 'Lista de tarefas',
+  mcp: 'Conector externo',
+  delegate: 'Agente ajudante',
+  other: 'Outra ação',
+  error: 'Deu erro',
+};
+
+// Friendly names for Claude Code's built-in subagent types.
+const AGENT_PT = { Explore: 'Explorador do código', 'general-purpose': 'Agente ajudante', Plan: 'Planejador', 'claude-code-guide': 'Guia do Claude Code', 'statusline-setup': 'Ajuste da barra de status' };
+/** "Explorador do código" instead of "Explore", "Code reviewer" instead of "my-plugin:code-reviewer". */
+function agentLabel(type) {
+  const t = String(type || '').split(':').pop();
+  return AGENT_PT[t] || (t ? t.charAt(0).toUpperCase() + t.slice(1).replace(/[-_]/g, ' ') : 'Agente ajudante');
+}
+
+/** One readable sentence about what the call did, in Portuguese. */
 function summarize(tool, input = {}) {
   if (!tool) return '';
   input = input || {};
   if (tool.startsWith('mcp__')) {
     const [, server, name] = tool.split('__');
-    return `${name || tool} (${server})`;
+    return `Usou o conector ${server}: ${String(name || '').replace(/_/g, ' ')}`;
   }
   switch (tool) {
     case 'Bash':
     case 'PowerShell':
-      return clip(input.description || input.command);
+      return `Rodou no terminal: ${clip(input.description || input.command, 60)}`;
+    case 'BashOutput':
+      return 'Conferiu a saída de um comando';
     case 'Read':
+    case 'NotebookRead': {
+      const sk = skillDir(input.file_path);
+      return sk ? `Leu as instruções da skill ${sk}` : `Leu o arquivo ${base(input.file_path || input.notebook_path)}`;
+    }
     case 'Write':
+      return `Criou o arquivo ${base(input.file_path)}`;
     case 'Edit':
     case 'MultiEdit':
-    case 'NotebookEdit': {
-      const f = input.file_path || input.notebook_path || '';
-      const sk = f.match(/([^/\\]+)[/\\]SKILL\.md$/);
-      return sk && tool === 'Read' ? `Lendo skill ${sk[1]}` : `${tool} ${base(f)}`;
-    }
+    case 'NotebookEdit':
+      return `Editou o arquivo ${base(input.file_path || input.notebook_path)}`;
     case 'Grep':
-      return `Grep "${clip(input.pattern, 40)}"`;
+      return `Procurou "${clip(input.pattern, 40)}" no código`;
     case 'Glob':
-      return `Glob ${clip(input.pattern, 40)}`;
+      return `Listou arquivos ${clip(input.pattern, 40)}`;
+    case 'LS':
+      return `Listou a pasta ${base(input.path)}`;
     case 'WebSearch':
-      return `Busca "${clip(input.query, 50)}"`;
+      return `Pesquisou na web: ${clip(input.query, 50)}`;
     case 'WebFetch':
       try {
-        return `Fetch ${new URL(input.url).host}`;
+        return `Abriu a página ${new URL(input.url).host}`;
       } catch {
-        return 'Fetch';
+        return 'Abriu uma página da web';
       }
     case 'Task':
     case 'Agent':
-      return `Delegando: ${clip(input.description || input.prompt, 50)}`;
+      return `Chamou um agente: ${clip(input.description || input.prompt, 50)}`;
     case 'Skill':
-      return `Skill ${input.skill || input.name || ''}`;
+      return `Usou a skill ${input.skill || input.name || ''}`.trim();
     case 'TodoWrite':
     case 'TaskCreate':
     case 'TaskUpdate':
-      return 'Atualizando tarefas';
+      return 'Atualizou a lista de tarefas';
+    case 'AskUserQuestion':
+      return 'Fez uma pergunta para você';
     default:
-      return tool;
+      return `Usou ${tool}`;
   }
 }
 
@@ -552,22 +679,10 @@ function summarize(tool, input = {}) {
 function skillOf(tool, input = {}) {
   input = input || {};
   if (tool === 'Skill') return input.skill || input.name || null;
-  const p = input.file_path || '';
-  const m = p.match(/([^/\\]+)[/\\]SKILL\.md$/);
-  return tool === 'Read' && m ? m[1] : null;
+  return tool === 'Read' ? skillDir(input.file_path) : null;
 }
 
-function category(tool = '') {
-  if (/^(Read|Grep|Glob|LS)$/.test(tool)) return 'read';
-  if (/^(Edit|Write|MultiEdit|NotebookEdit)$/.test(tool)) return 'edit';
-  if (tool === 'Bash' || tool === 'PowerShell') return 'exec';
-  if (/^Web/.test(tool)) return 'web';
-  if (tool === 'Agent' || tool === 'Task') return 'delegate';
-  if (tool.startsWith('mcp__')) return 'mcp';
-  return 'other';
-}
-
-return { clip, summarize, skillOf, category };
+return { clip, category, KIND_PT, agentLabel, summarize, skillOf };
 })();
 const { ACTIVE_WINDOW_MS, STALE_MS, SUB_LINGER_MS, STAGES, stageOf, verdictOf, createState, apply, effectiveStatus, listProjects, projectDetail, startDemo } = (() => {
 // Isomorphic state reducer for agent telemetry events (runs in Node and in the browser).
@@ -902,38 +1017,38 @@ const DEMO_PROJECTS = [
 ];
 const STAGE_TOOLS = {
   plan: [
-    ['Read', 'Lendo skill tlc-plan'],
-    ['Glob', 'Glob src/**/*.ts'],
-    ['Grep', 'Grep "processPayment"'],
-    ['Read', 'Read src/payments/service.ts'],
-    ['Read', 'Read package.json'],
-    ['Write', 'Write PLAN.md'],
+    ['Read', 'Leu as instruções da skill tlc-plan'],
+    ['Glob', 'Listou arquivos src/**/*.ts'],
+    ['Grep', 'Procurou "processPayment" no código'],
+    ['Read', 'Leu o arquivo service.ts'],
+    ['Read', 'Leu o arquivo package.json'],
+    ['Write', 'Criou o arquivo PLAN.md'],
   ],
   build: [
-    ['Read', 'Lendo skill tlc-implement'],
-    ['Read', 'Read PLAN.md'],
-    ['Edit', 'Edit retry-policy.ts'],
-    ['Edit', 'Edit service.ts'],
-    ['Write', 'Write retry-policy.spec.ts'],
-    ['Bash', 'Rodar testes unitários'],
-    ['Bash', 'npm run lint'],
-    ['Write', 'Write IMPLEMENTATION.md'],
+    ['Read', 'Leu as instruções da skill tlc-implement'],
+    ['Read', 'Leu o arquivo PLAN.md'],
+    ['Edit', 'Editou o arquivo retry-policy.ts'],
+    ['Edit', 'Editou o arquivo service.ts'],
+    ['Write', 'Criou o arquivo retry-policy.spec.ts'],
+    ['Bash', 'Rodou no terminal: testes unitários'],
+    ['Bash', 'Rodou no terminal: npm run lint'],
+    ['Write', 'Criou o arquivo IMPLEMENTATION.md'],
   ],
   test: [
-    ['Read', 'Lendo skill spec-driven-eval'],
-    ['Read', 'Read PLAN.md'],
-    ['Bash', 'git diff'],
-    ['Bash', 'Rodar testes unitários'],
-    ['Bash', 'npm run build'],
-    ['Write', 'Write QA.md'],
+    ['Read', 'Leu as instruções da skill spec-driven-eval'],
+    ['Read', 'Leu o arquivo PLAN.md'],
+    ['Bash', 'Rodou no terminal: git diff'],
+    ['Bash', 'Rodou no terminal: testes unitários'],
+    ['Bash', 'Rodou no terminal: npm run build'],
+    ['Write', 'Criou o arquivo QA.md'],
   ],
   ship: [
-    ['Bash', 'git status'],
-    ['Bash', 'git checkout -b feat/retry-idempotente'],
-    ['Bash', 'git add src/payments'],
-    ['Bash', 'git commit -m "feat(pagamentos): retry com idempotência"'],
-    ['Bash', 'git push -u origin feat/retry-idempotente'],
-    ['Bash', 'gh pr create'],
+    ['Bash', 'Rodou no terminal: git status'],
+    ['Bash', 'Rodou no terminal: git checkout -b feat/retry-idempotente'],
+    ['Bash', 'Rodou no terminal: git add src/payments'],
+    ['Bash', 'Rodou no terminal: git commit'],
+    ['Bash', 'Rodou no terminal: git push'],
+    ['mcp__github__create_pull_request', 'Usou o conector github: create pull request'],
   ],
 };
 const ORDER = ['plan', 'build', 'test', 'ship'];
@@ -972,7 +1087,7 @@ function startDemo(emit, { speed = 1, rand = Math.random } = {}) {
     const at = `agent-fleet-3d:${role}`;
     const tuid = `d${aid}`;
     const desc = { plan: `Planejar: ${s.taskName}`, build: s.failedOnce && s.reworkPending ? 'Retrabalho do QA' : `Implementar: ${s.taskName}`, test: `Testar: ${s.taskName}`, ship: 'Subir para o git' }[key];
-    emit({ t, e: 'PreToolUse', sid: s.sid, proj: s.proj, tool: 'Agent', tuid, step: `Delegando: ${desc}`, delegate: { type: at, desc } });
+    emit({ t, e: 'PreToolUse', sid: s.sid, proj: s.proj, tool: 'Agent', tuid, step: `Chamou um agente: ${desc}`, delegate: { type: at, desc } });
     emit({ t, e: 'SubagentStart', sid: s.sid, proj: s.proj, aid, at });
     s.stage = { key, aid, at, tuid, ticks: 0, target: 5 + Math.floor(rand() * 5), open: null };
     s.phase = key;
@@ -1033,7 +1148,7 @@ function startDemo(emit, { speed = 1, rand = Math.random } = {}) {
     const tuid = `t${(n++).toString(36)}`;
     st.open = [tool, step, tuid];
     st.ticks++;
-    const skill = step.startsWith('Lendo skill ') ? step.slice(12) : undefined;
+    const skill = step.startsWith('Leu as instruções da skill ') ? step.slice(27) : undefined;
     emit({ ...base, e: 'PreToolUse', tool, step, tuid, skill });
   };
   const id = setInterval(tick, Math.max(90, 450 / speed));
@@ -1042,7 +1157,7 @@ function startDemo(emit, { speed = 1, rand = Math.random } = {}) {
 
 return { ACTIVE_WINDOW_MS, STALE_MS, SUB_LINGER_MS, STAGES, stageOf, verdictOf, createState, apply, effectiveStatus, listProjects, projectDetail, startDemo };
 })();
-const { MAX_TOOLS_PER_HISTORY, hashId, promptText, parseTranscript, toEvents, pipelineOf, historyFromLive, dateGroup, filterChats, groupChats } = (() => {
+const { MAX_TOOLS_PER_HISTORY, stepCategory, hashId, promptText, parseTranscript, outcomeOf, toEvents, pipelineOf, historyFromLive, dateGroup, filterChats, CHAT_STATUS, chatStatus, groupChats } = (() => {
 // Isomorphic reader for Claude Code session transcripts (~/.claude/projects/<proj>/<session>.jsonl).
 // Turns a transcript into: meta (for the chat list), turns (for the 3D history) and hook-shaped
 // events (fed to the fleet reducer to rebuild the pipeline view of sessions that never ran our hooks).
@@ -1050,6 +1165,12 @@ const { MAX_TOOLS_PER_HISTORY, hashId, promptText, parseTranscript, toEvents, pi
 
 
 const MAX_TOOLS_PER_HISTORY = 1500;
+
+/** Category for steps that only kept their text (live events). */
+function stepCategory(tool, step = '') {
+  if (/instruções da skill|^Usou a skill/.test(step)) return 'skill';
+  return category(tool);
+}
 
 const ts = (s) => {
   const n = typeof s === 'number' ? s : Date.parse(s);
@@ -1112,7 +1233,7 @@ function parseSubagent(lines) {
     if (l.type === 'assistant' && Array.isArray(l.message?.content)) {
       for (const b of l.message.content) {
         if (b?.type !== 'tool_use') continue;
-        const tool = { id: b.id, name: b.name, step: summarize(b.name, b.input), cat: category(b.name), t, skill: skillOf(b.name, b.input) };
+        const tool = { id: b.id, name: b.name, step: summarize(b.name, b.input), cat: category(b.name, b.input), t, skill: skillOf(b.name, b.input) };
         tools.push(tool);
         byId.set(b.id, tool);
       }
@@ -1211,7 +1332,7 @@ function parseTranscript(lines, options = {}) {
             if (!meta.stages.includes(stage)) meta.stages.push(stage);
           }
         } else {
-          const tool = { id: b.id, name: b.name, step: summarize(b.name, input), cat: category(b.name), t, end: null, err: null, skill: skillOf(b.name, input) };
+          const tool = { id: b.id, name: b.name, step: summarize(b.name, input), cat: category(b.name, input), t, end: null, err: null, skill: skillOf(b.name, input) };
           if (tool.skill) skills.add(tool.skill);
           turn.tools.push(tool);
           turn.items.push({ kind: 'tool', ref: tool });
@@ -1254,9 +1375,25 @@ function parseTranscript(lines, options = {}) {
   }
   meta.skills = [...skills];
   meta.title = meta.title || meta.aiTitle || meta.firstPrompt || 'Chat sem título';
+  Object.assign(meta, outcomeOf(turns));
   const project = options.project || { id: hashId(meta.cwd || meta.id || 'x'), name: (meta.cwd || '').split(/[/\\]/).filter(Boolean).pop() || 'sem pasta', root: meta.cwd || '' };
   meta.project = project;
   return { meta, turns, events: toEvents(meta, turns, project) };
+}
+
+/** How the chat ended: pipeline result (complete/blocked/partial) and errors in the last request. */
+function outcomeOf(turns) {
+  const last = turns[turns.length - 1];
+  const lastErrors = last ? last.tools.filter((x) => x.err).length + last.agents.filter((a) => a.err).length : 0;
+  const staged = turns.flatMap((x) => x.agents).filter((a) => a.stage);
+  let pipelineStatus = null;
+  if (staged.length) {
+    const end = staged[staged.length - 1];
+    if (end.stage === 'ship' && !end.err) pipelineStatus = 'complete';
+    else if (end.stage === 'test' && end.verdict === 'fail') pipelineStatus = 'blocked';
+    else pipelineStatus = 'partial';
+  }
+  return { pipelineStatus, lastErrors };
 }
 
 /** Rebuilds the hook event stream so the fleet reducer can show the pipeline of any session. */
@@ -1273,7 +1410,7 @@ function toEvents(meta, turns, proj) {
         out.push({ t: T(r.t), e: 'PreToolUse', sid, proj, tool: r.name, tuid: r.id, step: r.step, skill: r.skill || undefined });
         if (r.end) out.push({ t: T(r.end), e: r.err ? 'PostToolUseFailure' : 'PostToolUse', sid, proj, tool: r.name, tuid: r.id, err: r.err || undefined });
       } else {
-        out.push({ t: T(r.t), e: 'PreToolUse', sid, proj, tool: 'Agent', tuid: r.id, step: `Delegando: ${r.desc}`, delegate: { type: r.type, desc: r.desc } });
+        out.push({ t: T(r.t), e: 'PreToolUse', sid, proj, tool: 'Agent', tuid: r.id, step: `Chamou um agente: ${r.desc}`, delegate: { type: r.type, desc: r.desc } });
         out.push({ t: T(r.t), e: 'SubagentStart', sid, proj, aid: r.id, at: r.type });
         for (const tl of r.tools) {
           out.push({ t: T(tl.t), e: 'PreToolUse', sid, proj, aid: r.id, at: r.type, tool: tl.name, tuid: tl.id, step: tl.step, skill: tl.skill || undefined });
@@ -1297,7 +1434,7 @@ function pipelineOf(events, sid, now) {
   const d = pid ? projectDetail(st, pid, now) : null;
   if (!d) return null;
   // History is not "live": keep finished stages finished even when old.
-  d.flows = d.flows.filter((f) => f.sid === sid).map((f) => ({ ...f, label: 'Orquestrador' }));
+  d.flows = d.flows.filter((f) => f.sid === sid).map((f) => ({ ...f, label: 'Seu pedido' }));
   return d;
 }
 
@@ -1318,7 +1455,7 @@ function historyFromLive(detail, sid) {
     }
     if (s.tool === 'Router' || s.tool === 'Agent') continue;
     if (!turn) newTurn(s.t, null);
-    const tool = { id: s.id || `${s.t}`, name: s.tool, step: s.step, cat: category(s.tool), t: s.t, end: s.dur != null ? s.t + s.dur : null, err: s.err || null };
+    const tool = { id: s.id || `${s.t}`, name: s.tool, step: s.step, cat: stepCategory(s.tool, s.step), t: s.t, end: s.dur != null ? s.t + s.dur : null, err: s.err || null };
     turn.tools.push(tool);
     turn.items.push({ kind: 'tool', ref: tool });
   }
@@ -1337,7 +1474,7 @@ function historyFromLive(detail, sid) {
       result: a.result,
       verdict: a.verdict,
       live: a.status !== 'done' && a.status !== 'ended',
-      tools: a.steps.map((s) => ({ id: s.id, name: s.tool, step: s.step, cat: category(s.tool), t: s.t, err: s.err || null })),
+      tools: a.steps.map((s) => ({ id: s.id, name: s.tool, step: s.step, cat: stepCategory(s.tool, s.step), t: s.t, err: s.err || null })),
     };
     target.agents.push(agent);
     // insert by time among items
@@ -1345,6 +1482,7 @@ function historyFromLive(detail, sid) {
     target.items.splice(idx < 0 ? target.items.length : idx, 0, { kind: 'agent', ref: agent });
   }
   const tools = turns.reduce((n, x) => n + x.tools.length, 0);
+  const flow = detail.flows.find((f) => f.sid === sid);
   const stages = [...new Set(subs.map((a) => a.stage).filter(Boolean))];
   const meta = {
     id: sid,
@@ -1366,7 +1504,8 @@ function historyFromLive(detail, sid) {
     skills: main.skill ? [main.skill] : [],
     project: { id: detail.id, name: detail.name, root: detail.root },
   };
-  const flow = detail.flows.find((f) => f.sid === sid);
+  Object.assign(meta, outcomeOf(turns));
+  if (flow?.run) meta.pipelineStatus = flow.run.status === 'complete' ? 'complete' : flow.run.status === 'blocked' ? 'blocked' : 'partial';
   meta.title = flow?.run?.task || meta.firstPrompt || main.label;
   return { meta, turns };
 }
@@ -1405,6 +1544,27 @@ function filterChats(chats, { q = '', show = 'all' } = {}) {
   });
 }
 
+// Status groups, in the order they are listed (what needs you first).
+const CHAT_STATUS = [
+  { key: 'waiting', label: 'Esperando sua resposta', hint: 'O Claude parou e está aguardando você' },
+  { key: 'working', label: 'Trabalhando agora', hint: 'O Claude está executando neste momento' },
+  { key: 'blocked', label: 'Barrado nos testes', hint: 'O QA reprovou e a entrega não foi para o Git' },
+  { key: 'error', label: 'Terminou com erro', hint: 'O último pedido teve alguma ação que falhou' },
+  { key: 'shipped', label: 'Entregue no Git', hint: 'Passou pelo pipeline inteiro e foi enviado' },
+  { key: 'done', label: 'Concluído', hint: 'Conversa encerrada sem pendências' },
+];
+const STATUS_ORDER = Object.fromEntries(CHAT_STATUS.map((x, i) => [x.key, i]));
+
+/** One status per chat, for the "Por status" grouping and the badge in the list. */
+function chatStatus(c) {
+  if (c.live && c.status === 'waiting') return 'waiting';
+  if (c.live) return 'working';
+  if (c.pipelineStatus === 'blocked') return 'blocked';
+  if (c.lastErrors > 0 || c.status === 'error') return 'error';
+  if (c.pipelineStatus === 'complete') return 'shipped';
+  return 'done';
+}
+
 function groupChats(chats, by = 'date', now = Date.now()) {
   const groups = new Map();
   const sorted = [...chats].sort((a, b) => (b.updated || 0) - (a.updated || 0));
@@ -1412,18 +1572,23 @@ function groupChats(chats, by = 'date', now = Date.now()) {
     let g;
     if (by === 'project') g = { key: c.project?.root || c.project?.name || '-', label: c.project?.name || 'Sem pasta', sub: c.project?.root || '' };
     else if (by === 'none') g = { key: 'all', label: 'Todos os chats' };
+    else if (by === 'status') {
+      const st = CHAT_STATUS[STATUS_ORDER[chatStatus(c)]];
+      g = { key: st.key, label: st.label, sub: st.hint };
+    }
     else g = dateGroup(c.updated || c.created || 0, now);
     if (!groups.has(g.key)) groups.set(g.key, { ...g, chats: [] });
     groups.get(g.key).chats.push(c);
   }
   const out = [...groups.values()];
   if (by === 'date') out.sort((a, b) => a.key.localeCompare(b.key));
+  else if (by === 'status') out.sort((a, b) => STATUS_ORDER[a.key] - STATUS_ORDER[b.key]);
   else out.sort((a, b) => (b.chats[0].updated || 0) - (a.chats[0].updated || 0));
   return out;
 }
 
 
-return { MAX_TOOLS_PER_HISTORY, hashId, promptText, parseTranscript, toEvents, pipelineOf, historyFromLive, dateGroup, filterChats, groupChats };
+return { MAX_TOOLS_PER_HISTORY, stepCategory, hashId, promptText, parseTranscript, outcomeOf, toEvents, pipelineOf, historyFromLive, dateGroup, filterChats, CHAT_STATUS, chatStatus, groupChats };
 })();
 const { demoTranscripts } = (() => {
 // Demo chat history: realistic transcripts in the same JSONL shape Claude Code writes,
@@ -1453,7 +1618,7 @@ const CHATS = [
   [0, 3, 'Investigar lentidão no /checkout', 'plain', ['o endpoint /checkout está lento em produção, investigue', 'adicione um índice na tabela orders', 'rode os testes de novo']],
   [1, 5, 'Explicar navegação do app', 'explore', ['me explique como a navegação do app funciona', 'onde fica o fluxo de login?']],
   [3, 20, 'Auditoria de acessibilidade', 'plain', ['faça uma auditoria de acessibilidade na landing page', 'corrija os contrastes apontados']],
-  [2, 27, 'Deduplicar eventos de pedido', 'pipeline', ['/agent-fleet-3d:pipeline deduplicar eventos de pedido']],
+  [2, 27, 'Deduplicar eventos de pedido', 'pipeline-blocked', ['/agent-fleet-3d:pipeline deduplicar eventos de pedido']],
   [4, 30, 'Mapear limites da API da Meta', 'plain', ['quais limites de mensagens por segundo a Cloud API tem?', 'escreva um resumo no docs/limites.md']],
   [1, 52, 'Tela de onboarding com biometria', 'pipeline-rework', ['/agent-fleet-3d:pipeline tela de onboarding com biometria']],
   [0, 70, 'ADR sobre fila de pagamentos', 'plain', ['crie um ADR registrando por que escolhemos SQS para a fila de pagamentos']],
@@ -1537,6 +1702,13 @@ function demoTranscripts(now = Date.now(), seed = 7) {
       if (kind.startsWith('pipeline') && k === 0) {
         agent('agent-fleet-3d:tech-lead', `Planejar: ${title}`, 'PLAN.md com 4 tarefas e 5 critérios de aceite', STAGE_TOOLS['tech-lead']);
         agent('agent-fleet-3d:engineer', `Implementar: ${title}`, 'Testes passando, IMPLEMENTATION.md escrito', STAGE_TOOLS.engineer);
+        if (kind === 'pipeline-blocked') {
+          agent('agent-fleet-3d:qa', `Testar: ${title}`, '1 critério falhou: evento duplicado ainda passa em reenvio\nVEREDITO: REPROVADO', STAGE_TOOLS.qa);
+          agent('agent-fleet-3d:engineer', 'Retrabalho do QA', 'Tentativa de correção no consumidor', STAGE_TOOLS.engineer.slice(1));
+          agent('agent-fleet-3d:qa', `Testar: ${title}`, 'O mesmo critério continua falhando\nVEREDITO: REPROVADO', STAGE_TOOLS.qa);
+          say('O QA reprovou duas vezes. Parei antes de subir para o git: o reenvio ainda gera evento duplicado. Veja o QA.md.');
+          continue;
+        }
         if (kind === 'pipeline-rework') {
           agent('agent-fleet-3d:qa', `Testar: ${title}`, '2 critérios falharam: timeout não respeitado\nVEREDITO: REPROVADO', STAGE_TOOLS.qa);
           agent('agent-fleet-3d:engineer', 'Retrabalho do QA', 'Falhas do QA.md corrigidas', STAGE_TOOLS.engineer.slice(1));
@@ -1563,11 +1735,268 @@ function demoTranscripts(now = Date.now(), seed = 7) {
 
 return { demoTranscripts };
 })();
+const { iconGeometry, ICON_KEYS, iconMaterial, iconFor } = (() => {
+// Small 3D icons built from primitives, one merged geometry each, with a vertex-color "shade"
+// so a single tint (instance or material color) gives a darker body and a lighter accent.
+// All icons are about 0.5 units tall, centered on the origin and facing +z (toward the camera).
+
+
+
+const BODY = 0.55;
+const MID = 0.8;
+const ACCENT = 1.25;
+
+function part(geo, shade, { x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0, s = 1 } = {}) {
+  let g = geo.index ? geo.toNonIndexed() : geo;
+  if (!g.attributes.uv) g.setAttribute('uv', new THREE.Float32BufferAttribute(new Float32Array((g.attributes.position.count) * 2), 2));
+  for (const k of Object.keys(g.attributes)) if (!['position', 'normal', 'uv'].includes(k)) g.deleteAttribute(k);
+  const m = new THREE.Matrix4().compose(new THREE.Vector3(x, y, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(rx, ry, rz)), new THREE.Vector3(s, s, s));
+  g.applyMatrix4(m);
+  const n = g.attributes.position.count;
+  const c = new Float32Array(n * 3).fill(shade);
+  g.setAttribute('color', new THREE.BufferAttribute(c, 3));
+  return g;
+}
+const box = (w, h, d) => new THREE.BoxGeometry(w, h, d);
+const cyl = (r1, r2, h, seg = 16) => new THREE.CylinderGeometry(r1, r2, h, seg);
+const sph = (r, a = 16, b = 12) => new THREE.SphereGeometry(r, a, b);
+const tor = (r, t, a = 10, b = 32, arc = Math.PI * 2) => new THREE.TorusGeometry(r, t, a, b, arc);
+const FRONT = Math.PI / 2; // rotate cylinders so their axis points at the camera
+
+function roundedRect(w, h, r) {
+  const s = new THREE.Shape();
+  const x = -w / 2;
+  const y = -h / 2;
+  s.moveTo(x + r, y);
+  s.lineTo(x + w - r, y);
+  s.quadraticCurveTo(x + w, y, x + w, y + r);
+  s.lineTo(x + w, y + h - r);
+  s.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  s.lineTo(x + r, y + h);
+  s.quadraticCurveTo(x, y + h, x, y + h - r);
+  s.lineTo(x, y + r);
+  s.quadraticCurveTo(x, y, x + r, y);
+  return s;
+}
+const extrude = (shape, depth) => {
+  const g = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: false, curveSegments: 8 });
+  g.translate(0, 0, -depth / 2);
+  return g;
+};
+// a check mark made of two bars
+const check = (sz, z, shade = ACCENT, ox = 0, oy = 0) => [
+  part(box(sz * 0.45, sz * 0.14, 0.04), shade, { x: ox - sz * 0.2, y: oy - sz * 0.05, z, rz: -Math.PI / 4 }),
+  part(box(sz * 0.85, sz * 0.14, 0.04), shade, { x: ox + sz * 0.12, y: oy + sz * 0.08, z, rz: Math.PI / 4 }),
+];
+
+const BUILD = {
+  // Leitura: uma folha com linhas de texto
+  read: () => [
+    part(box(0.34, 0.44, 0.05), BODY),
+    part(box(0.12, 0.12, 0.052), MID, { x: 0.11, y: 0.16, z: 0.002, rz: Math.PI / 4 }),
+    ...[0.1, 0.02, -0.06, -0.14].map((y, i) => part(box(i === 0 ? 0.14 : 0.22, 0.03, 0.02), ACCENT, { x: i === 0 ? -0.04 : 0, y, z: 0.035 })),
+  ],
+  // Busca: lupa
+  search: () => [
+    part(tor(0.13, 0.04), ACCENT, { x: -0.04, y: 0.06 }),
+    part(cyl(0.11, 0.11, 0.02, 24), BODY, { x: -0.04, y: 0.06, rx: FRONT }),
+    part(cyl(0.035, 0.035, 0.2), MID, { x: 0.1, y: -0.12, rz: Math.PI / 4 }),
+  ],
+  // Edição: lápis inclinado
+  edit: () => {
+    const p = { rz: -0.75 };
+    const g = [part(cyl(0.06, 0.06, 0.34, 6), MID), part(cyl(0.0, 0.06, 0.12, 6), ACCENT, { y: -0.23 }), part(cyl(0.062, 0.062, 0.06, 6), BODY, { y: 0.2 })];
+    const m = new THREE.Matrix4().makeRotationZ(p.rz);
+    for (const x of g) x.applyMatrix4(m);
+    return g;
+  },
+  // Arquivo novo: folha com um "+"
+  write: () => [
+    part(box(0.32, 0.42, 0.05), BODY, { x: -0.03, y: 0.02 }),
+    ...[0.09, 0.01, -0.07].map((y) => part(box(0.2, 0.03, 0.02), MID, { x: -0.03, y, z: 0.035 })),
+    part(cyl(0.11, 0.11, 0.04, 24), ACCENT, { x: 0.12, y: -0.15, z: 0.04, rx: FRONT }),
+    part(box(0.12, 0.035, 0.03), BODY, { x: 0.12, y: -0.15, z: 0.07 }),
+    part(box(0.035, 0.12, 0.03), BODY, { x: 0.12, y: -0.15, z: 0.07 }),
+  ],
+  // Comando: tela de terminal com ">_"
+  exec: () => [
+    part(extrude(roundedRect(0.48, 0.36, 0.05), 0.07), BODY),
+    part(box(0.48, 0.06, 0.075), MID, { y: 0.15 }),
+    part(box(0.12, 0.035, 0.03), ACCENT, { x: -0.11, y: 0.0, z: 0.045, rz: -0.6 }),
+    part(box(0.12, 0.035, 0.03), ACCENT, { x: -0.11, y: -0.07, z: 0.045, rz: 0.6 }),
+    part(box(0.12, 0.035, 0.03), ACCENT, { x: 0.05, y: -0.1, z: 0.045 }),
+  ],
+  // Web: globo com meridianos
+  web: () => [
+    part(sph(0.17, 20, 14), BODY),
+    part(tor(0.18, 0.016, 6, 40), ACCENT, { rx: Math.PI / 2 }),
+    part(tor(0.18, 0.016, 6, 40), ACCENT),
+    part(tor(0.18, 0.016, 6, 40), ACCENT, { ry: Math.PI / 2 }),
+  ],
+  // Skill: livro aberto
+  skill: () => [
+    part(box(0.22, 0.32, 0.03), BODY, { x: -0.1, ry: 0.35 }),
+    part(box(0.22, 0.32, 0.03), BODY, { x: 0.1, ry: -0.35 }),
+    part(box(0.19, 0.29, 0.02), ACCENT, { x: -0.095, z: 0.03, ry: 0.35 }),
+    part(box(0.19, 0.29, 0.02), ACCENT, { x: 0.095, z: 0.03, ry: -0.35 }),
+    part(cyl(0.02, 0.02, 0.32, 8), MID, { z: -0.03 }),
+  ],
+  // Tarefas: prancheta com check
+  task: () => [
+    part(box(0.34, 0.44, 0.04), BODY),
+    part(box(0.16, 0.06, 0.06), MID, { y: 0.22 }),
+    ...check(0.16, 0.035, ACCENT, -0.08, 0.06),
+    part(box(0.12, 0.03, 0.02), MID, { x: 0.08, y: 0.06, z: 0.03 }),
+    part(box(0.24, 0.03, 0.02), MID, { y: -0.08, z: 0.03 }),
+  ],
+  // Conector: tomada
+  mcp: () => [
+    part(extrude(roundedRect(0.24, 0.22, 0.05), 0.18), MID),
+    part(cyl(0.025, 0.025, 0.12), ACCENT, { x: -0.06, y: 0.16 }),
+    part(cyl(0.025, 0.025, 0.12), ACCENT, { x: 0.06, y: 0.16 }),
+    part(cyl(0.04, 0.04, 0.16), BODY, { y: -0.18 }),
+  ],
+  other: () => [part(new THREE.OctahedronGeometry(0.18, 0), MID)],
+  // Seu pedido: balão de conversa com reticências
+  prompt: () => {
+    const s = roundedRect(0.6, 0.4, 0.12);
+    const tail = new THREE.Shape();
+    tail.moveTo(-0.16, -0.18);
+    tail.lineTo(-0.24, -0.33);
+    tail.lineTo(-0.04, -0.18);
+    return [part(extrude(s, 0.08), MID), part(extrude(tail, 0.08), MID), ...[-0.15, 0, 0.15].map((x) => part(sph(0.04), ACCENT, { x, z: 0.05 }))];
+  },
+  // Agente ajudante: robô
+  agent: () => [
+    part(extrude(roundedRect(0.42, 0.32, 0.08), 0.3), MID),
+    part(sph(0.05), ACCENT, { x: -0.09, y: 0.02, z: 0.16 }),
+    part(sph(0.05), ACCENT, { x: 0.09, y: 0.02, z: 0.16 }),
+    part(box(0.14, 0.025, 0.02), BODY, { y: -0.08, z: 0.155 }),
+    part(cyl(0.015, 0.015, 0.12), BODY, { y: 0.22 }),
+    part(sph(0.04), ACCENT, { y: 0.29 }),
+    part(cyl(0.04, 0.04, 0.04, 12), BODY, { x: -0.23, rz: Math.PI / 2 }),
+    part(cyl(0.04, 0.04, 0.04, 12), BODY, { x: 0.23, rz: Math.PI / 2 }),
+  ],
+  // Tech Lead: prancheta com o plano
+  plan: () => [
+    part(extrude(roundedRect(0.4, 0.52, 0.04), 0.05), BODY),
+    part(extrude(roundedRect(0.18, 0.08, 0.02), 0.07), MID, { y: 0.26 }),
+    ...[0.12, 0.0, -0.12].flatMap((y) => [...check(0.1, 0.04, ACCENT, -0.11, y), part(box(0.18, 0.03, 0.02), MID, { x: 0.06, y, z: 0.035 })]),
+  ],
+  // Engenheiro: engrenagem
+  build: () => {
+    const g = [part(cyl(0.2, 0.2, 0.1, 28), MID, { rx: FRONT }), part(cyl(0.08, 0.08, 0.13, 20), BODY, { rx: FRONT })];
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      g.push(part(box(0.09, 0.09, 0.1), MID, { x: Math.cos(a) * 0.23, y: Math.sin(a) * 0.23, rz: a }));
+    }
+    g.push(part(tor(0.14, 0.015, 6, 32), ACCENT, { z: 0.055 }));
+    return g;
+  },
+  // QA: escudo com check
+  test: () => {
+    const s = new THREE.Shape();
+    s.moveTo(0, 0.26);
+    s.quadraticCurveTo(0.14, 0.2, 0.22, 0.2);
+    s.lineTo(0.22, 0.0);
+    s.quadraticCurveTo(0.2, -0.18, 0, -0.28);
+    s.quadraticCurveTo(-0.2, -0.18, -0.22, 0.0);
+    s.lineTo(-0.22, 0.2);
+    s.quadraticCurveTo(-0.14, 0.2, 0, 0.26);
+    return [part(extrude(s, 0.08), MID), ...check(0.26, 0.05, ACCENT, 0, -0.01)];
+  },
+  // DevOps: foguete
+  ship: () => {
+    const prof = [
+      [0.0, -0.2],
+      [0.1, -0.18],
+      [0.12, -0.05],
+      [0.11, 0.08],
+      [0.07, 0.18],
+      [0.0, 0.26],
+    ].map(([x, y]) => new THREE.Vector2(x, y));
+    const g = [part(new THREE.LatheGeometry(prof, 20), MID), part(sph(0.045), ACCENT, { y: 0.06, z: 0.1 })];
+    for (let i = 0; i < 3; i++) {
+      const a = (i / 3) * Math.PI * 2 + Math.PI / 6;
+      g.push(part(box(0.02, 0.13, 0.1), BODY, { x: Math.cos(a) * 0.12, y: -0.15, z: Math.sin(a) * 0.12, ry: -a }));
+    }
+    g.push(part(cyl(0.05, 0.0, 0.1, 10), ACCENT, { y: -0.26, rz: Math.PI }));
+    return g;
+  },
+  // Git: ramificação com três commits
+  git: () => {
+    const curve = new THREE.QuadraticBezierCurve3(new THREE.Vector3(0, -0.04, 0), new THREE.Vector3(0.16, 0.0, 0), new THREE.Vector3(0.16, 0.16, 0));
+    return [
+      part(cyl(0.025, 0.025, 0.44, 10), BODY),
+      part(new THREE.TubeGeometry(curve, 12, 0.025, 8, false), BODY),
+      part(sph(0.06), ACCENT, { y: -0.22 }),
+      part(sph(0.06), ACCENT, { y: 0.22 }),
+      part(sph(0.06), ACCENT, { x: 0.16, y: 0.16 }),
+    ];
+  },
+};
+
+const cache = new Map();
+/** Merged geometry for an icon key (cached). */
+function iconGeometry(key) {
+  const k = BUILD[key] ? key : 'other';
+  if (!cache.has(k)) {
+    const g = mergeGeometries(BUILD[k](), false);
+    g.computeBoundingSphere();
+    cache.set(k, g);
+  }
+  return cache.get(k);
+}
+const ICON_KEYS = Object.keys(BUILD);
+
+/** Material that shows the icon shading under any tint. */
+function iconMaterial(extra = {}) {
+  return new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.42, metalness: 0.08, ...extra });
+}
+
+/** Icon key for a tool category or a pipeline stage. */
+function iconFor(cat) {
+  return BUILD[cat] ? cat : cat === 'delegate' ? 'agent' : 'other';
+}
+
+return { iconGeometry, ICON_KEYS, iconMaterial, iconFor };
+})();
+const { icon2d } = (() => {
+// Flat versions of the 3D icons, for the legend and the side panel (stroke = currentColor).
+const P = {
+  read: '<path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><path d="M9.5 11h6M9.5 14h6M9.5 17h4"/>',
+  search: '<circle cx="10.5" cy="10.5" r="5.5"/><path d="M15 15l5 5"/>',
+  edit: '<path d="M4 20l1.2-4.6L16.5 4.1a1.8 1.8 0 0 1 2.6 0l.8.8a1.8 1.8 0 0 1 0 2.6L8.6 18.8z"/><path d="M14.5 6l3.5 3.5"/>',
+  write: '<path d="M6 3h7l4 4v6"/><path d="M13 3v4h4"/><path d="M6 3v18h7"/><path d="M18 16v6M15 19h6"/>',
+  exec: '<rect x="3" y="4.5" width="18" height="15" rx="2.5"/><path d="M7 10l3 2.5L7 15M12 15.5h5"/>',
+  web: '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.4 3.8 5.2 3.8 8.5s-1.2 6.1-3.8 8.5c-2.6-2.4-3.8-5.2-3.8-8.5S9.4 5.9 12 3.5z"/>',
+  skill: '<path d="M12 6.5C10 5 7 4.5 3.5 5v13c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5C17 4.5 14 5 12 6.5z"/><path d="M12 6.5v13"/>',
+  task: '<rect x="5" y="4.5" width="14" height="16.5" rx="2"/><path d="M9 3h6v3H9z"/><path d="M8.5 12.5l2 2 4-4M8.5 18h7"/>',
+  mcp: '<path d="M9 3v4M15 3v4"/><rect x="6.5" y="7" width="11" height="7" rx="2"/><path d="M12 14v3a3 3 0 0 1-3 3H7"/>',
+  agent: '<rect x="4.5" y="7.5" width="15" height="11" rx="3"/><circle cx="9.5" cy="12.5" r="1.2"/><circle cx="14.5" cy="12.5" r="1.2"/><path d="M12 7.5V4.5M12 3.5v.2M2.5 12v2.5M21.5 12v2.5"/>',
+  prompt: '<path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v7a2.5 2.5 0 0 1-2.5 2.5H11l-4.5 4v-4A2.5 2.5 0 0 1 4 13.5z"/><path d="M8.5 10h.01M12 10h.01M15.5 10h.01"/>',
+  plan: '<rect x="5" y="4.5" width="14" height="16.5" rx="2"/><path d="M9 3h6v3H9z"/><path d="M8 10.5l1.2 1.2 2-2M13 11h3M8 15.5l1.2 1.2 2-2M13 16h3"/>',
+  build: '<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.6M12 18.6v2.6M21.2 12h-2.6M5.4 12H2.8M18.5 5.5l-1.8 1.8M7.3 16.7l-1.8 1.8M18.5 18.5l-1.8-1.8M7.3 7.3L5.5 5.5"/><circle cx="12" cy="12" r="6.5"/>',
+  test: '<path d="M12 3l7 3v5.5c0 4.2-2.9 7.6-7 9.5-4.1-1.9-7-5.3-7-9.5V6z"/><path d="M8.8 12l2.2 2.2 4.3-4.4"/>',
+  ship: '<path d="M12 2.5c3 2.4 4.5 5.6 4.5 9.5v4h-9v-4c0-3.9 1.5-7.1 4.5-9.5z"/><circle cx="12" cy="10" r="1.6"/><path d="M7.5 13.5L5 16.5v2h2.5M16.5 13.5L19 16.5v2h-2.5M10.5 19.5l1.5 2 1.5-2"/>',
+  git: '<circle cx="7" cy="5.5" r="2"/><circle cx="7" cy="18.5" r="2"/><circle cx="17" cy="8.5" r="2"/><path d="M7 7.5v9M17 10.5c0 3.5-3 4.5-10 6"/>',
+  other: '<path d="M12 3l7 9-7 9-7-9z"/>',
+  error: '<circle cx="12" cy="12" r="8.5"/><path d="M9 9l6 6M15 9l-6 6"/>',
+};
+
+function icon2d(key, cls = '') {
+  return `<svg class="ico ${cls}" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[key] || P.other}</svg>`;
+}
+
+return { icon2d };
+})();
 const { createScene } = (() => {
 // 3D delivery flow for one project. Each main session is a row:
-//   Sessão (orquestrador) → Tech Lead → Engenheiro → QA → DevOps → Git
+//   Seu pedido → Tech Lead → Engenheiro → QA → DevOps → Git
 // joined by a conveyor. The work packet travels to the active station, finished
 // segments light up, and a rework arc links QA back to the Engineer when QA rejects.
+
+
 
 
 
@@ -1579,6 +2008,9 @@ const ROW_GAP = 9.5;
 const NODE_X = [-14, -8.4, -2.8, 2.8, 8.4, 14]; // origin, plan, build, test, ship, git
 const STAGE_KEYS = ['plan', 'build', 'test', 'ship'];
 const MAX_SLABS = 8;
+// what each station does, in plain words (shown while it hasn't started yet)
+const STAGE_JOB = ['Vai planejar', 'Vai programar', 'Vai testar', 'Vai enviar ao Git'];
+const STAGE_DID = ['Planejou', 'Programou', 'Aprovou', 'Enviou'];
 const STATUS_PT = {
   pending: 'Aguardando',
   active: 'Em andamento',
@@ -1602,14 +2034,6 @@ function glowTexture() {
   return t;
 }
 
-function category(tool = '') {
-  if (/^(Read|Grep|Glob|LS)$/.test(tool)) return 'read';
-  if (/^(Edit|Write|MultiEdit|NotebookEdit)$/.test(tool)) return 'edit';
-  if (tool === 'Bash') return 'exec';
-  if (/^Web/.test(tool)) return 'web';
-  if (tool === 'Agent' || tool === 'Task') return 'delegate';
-  return 'other';
-}
 
 function el(tag, cls, text) {
   const e = document.createElement(tag);
@@ -1652,7 +2076,7 @@ function createScene(host, { onSelect, onFocusRow } = {}) {
   let pal = {};
   let light = false;
   function readPalette() {
-    const keys = ['sky', 'panel', 'ink', 'ink-2', 'ink-3', 'running', 'thinking', 'waiting', 'error', 'idle', 'focus'];
+    const keys = ['sky', 'panel', 'ink', 'ink-2', 'ink-3', 'running', 'thinking', 'waiting', 'error', 'idle', 'focus', 'c-read', 'c-search', 'c-edit', 'c-write', 'c-exec', 'c-web', 'c-skill', 'c-task', 'c-mcp', 'c-agent'];
     pal = Object.fromEntries(keys.map((k) => [k, new THREE.Color(css('--' + k))]));
     pal.line = new THREE.Color(css('--ink-3'));
     light = pal.sky.getHSL({}).l > 0.5;
@@ -1662,8 +2086,12 @@ function createScene(host, { onSelect, onFocusRow } = {}) {
   readPalette();
   const stageColor = (s) =>
     ({ pending: pal.idle, active: s.agentStatus === 'waiting' ? pal.waiting : s.agentStatus === 'error' ? pal.error : pal.running, done: pal.thinking, failed: pal.error, stale: pal.idle })[s.status] || pal.idle;
-  const slabColor = (st) =>
-    st.st === 'error' ? pal.error : st.st === 'running' ? pal.running : { read: pal['ink-3'], edit: pal.thinking, exec: pal.running, web: pal.waiting, delegate: pal.ink, other: pal['ink-2'] }[category(st.tool)];
+  const stepCat = (st) => stepCategory(st.tool, st.step);
+  const slabColor = (st) => {
+    if (st.st === 'error') return pal.error;
+    const c = stepCat(st);
+    return pal['c-' + (c === 'delegate' ? 'agent' : c)] || pal['ink-2'];
+  };
 
   // ------------------------------------------------------------ floor
   const floorMat = new THREE.LineBasicMaterial({ transparent: true, opacity: 0.18 });
@@ -1688,15 +2116,6 @@ function createScene(host, { onSelect, onFocusRow } = {}) {
   // ------------------------------------------------------------ shared geometry
   const geo = {
     pad: new THREE.CylinderGeometry(1.35, 1.5, 0.22, 6),
-    plan: new THREE.OctahedronGeometry(0.62, 0),
-    build: new THREE.BoxGeometry(0.85, 0.85, 0.85),
-    test: new THREE.TorusGeometry(0.5, 0.13, 12, 40),
-    testCore: new THREE.SphereGeometry(0.24, 20, 12),
-    ship: new THREE.ConeGeometry(0.48, 1.1, 6),
-    origin: new THREE.SphereGeometry(0.5, 32, 16),
-    git: new THREE.CylinderGeometry(0.55, 0.55, 0.18, 32),
-    slab: new THREE.BoxGeometry(0.55, 0.12, 0.55),
-    packet: new THREE.BoxGeometry(0.42, 0.42, 0.42),
     ring: new THREE.TorusGeometry(1.75, 0.04, 8, 64),
     dot: new THREE.SphereGeometry(0.09, 10, 8),
     other: new THREE.SphereGeometry(0.2, 16, 10),
@@ -1761,8 +2180,10 @@ function createScene(host, { onSelect, onFocusRow } = {}) {
     }
 
     // origin (session / orchestrator)
-    const origin = new THREE.Mesh(geo.origin, new THREE.MeshStandardMaterial({ roughness: 0.3, emissiveIntensity: 0.6 }));
-    origin.position.set(NODE_X[0], NODE_Y + 0.15, 0);
+    // the chat itself: a speech bubble (your request starts the flow)
+    const origin = new THREE.Mesh(iconGeometry('prompt'), iconMaterial({ emissiveIntensity: 0.6 }));
+    origin.scale.setScalar(2);
+    origin.position.set(NODE_X[0], NODE_Y + 0.3, 0);
     origin.userData.pick = { kind: 'main', sid: flow.sid };
     group.add(origin);
     pickables.push(origin);
@@ -1791,16 +2212,13 @@ function createScene(host, { onSelect, onFocusRow } = {}) {
       const pad = new THREE.Mesh(geo.pad, new THREE.MeshStandardMaterial({ roughness: 0.75, transparent: true }));
       pad.position.y = -0.5;
       sg.add(pad);
-      const mat = new THREE.MeshStandardMaterial({ roughness: 0.3, metalness: 0.15, emissiveIntensity: 0.6, transparent: true });
+      // station icon: clipboard (plan), gear (build), shield (test), rocket (ship)
+      const mat = iconMaterial({ emissiveIntensity: 0.6, transparent: true });
       const body = new THREE.Group();
-      const main = new THREE.Mesh(geo[key], mat);
+      const main = new THREE.Mesh(iconGeometry(key), mat);
+      main.scale.setScalar(2.6);
       body.add(main);
-      if (key === 'test') {
-        const core = new THREE.Mesh(geo.testCore, mat);
-        body.add(core);
-      }
-      if (key === 'ship') main.position.y = 0.1;
-      body.position.y = NODE_Y + 0.35;
+      body.position.y = NODE_Y + 0.45;
       sg.add(body);
       for (const m of body.children) {
         m.userData.pick = { kind: 'stage', sid: flow.sid, key };
@@ -1816,10 +2234,12 @@ function createScene(host, { onSelect, onFocusRow } = {}) {
       ring.rotation.x = Math.PI / 2;
       ring.position.y = -0.36;
       sg.add(ring);
+      // the stage's latest actions, as small icons in a row behind the station
       const slabs = [];
       for (let k = 0; k < MAX_SLABS; k++) {
-        const s = new THREE.Mesh(geo.slab, new THREE.MeshBasicMaterial({ transparent: true }));
-        s.position.set(0, -0.3 + k * 0.17, -1.85);
+        const s = new THREE.Mesh(iconGeometry('other'), iconMaterial({ transparent: true }));
+        s.scale.setScalar(0.62);
+        s.position.set(-1.05 + (k % 4) * 0.7, -0.15 + Math.floor(k / 4) * 0.55, -1.9);
         s.visible = false;
         sg.add(s);
         slabs.push(s);
@@ -1827,19 +2247,18 @@ function createScene(host, { onSelect, onFocusRow } = {}) {
       const label = cardLabel('stage', () => onSelect?.({ sid: flow.sid, key }));
       label.obj.position.set(0, NODE_Y + (i % 2 ? 2.9 : 1.6), 0);
       sg.add(label.obj);
-      return { key, sg, pad, body, mat, halo, ring, slabs, label, data: null };
+      return { key, sg, pad, body, main, mat, halo, ring, slabs, label, data: null };
     });
 
     // git endpoint
     const git = new THREE.Group();
     git.position.set(NODE_X[5], 0, 0);
     group.add(git);
-    const gitMat = new THREE.MeshStandardMaterial({ roughness: 0.4, emissiveIntensity: 0.5 });
-    for (let k = 0; k < 3; k++) {
-      const d = new THREE.Mesh(geo.git, gitMat);
-      d.position.y = -0.2 + k * 0.32;
-      git.add(d);
-    }
+    const gitMat = iconMaterial({ emissiveIntensity: 0.5 });
+    const gitIcon = new THREE.Mesh(iconGeometry('git'), gitMat);
+    gitIcon.scale.setScalar(2.2);
+    gitIcon.position.y = NODE_Y + 0.3;
+    git.add(gitIcon);
     const gitLabel = cardLabel('git');
     gitLabel.obj.center.set(0.5, 0);
     gitLabel.obj.position.set(0, -0.9, 0.6);
@@ -1878,7 +2297,9 @@ function createScene(host, { onSelect, onFocusRow } = {}) {
     group.add(arcLabel.obj);
 
     // work packet
-    const packet = new THREE.Mesh(geo.packet, new THREE.MeshStandardMaterial({ roughness: 0.25, emissiveIntensity: 0.9 }));
+    // the work order travelling between stations: a clipboard
+    const packet = new THREE.Mesh(iconGeometry('task'), iconMaterial({ emissiveIntensity: 0.9 }));
+    packet.scale.setScalar(0.95);
     const packetHalo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, transparent: true, depthWrite: false }));
     packetHalo.scale.setScalar(1.6);
     group.add(packet, packetHalo);
@@ -1952,7 +2373,7 @@ function createScene(host, { onSelect, onFocusRow } = {}) {
     // origin card
     const runText = run ? `${run.task ? run.task : 'Pipeline'}${flow.runs > 1 ? ` · execução ${flow.runs}` : ''}` : 'Sem pipeline';
     fillCard(row.originLabel.card, [
-      ['n', flow.label],
+      ['n', 'Seu pedido'],
       ['t', isFocus ? runText : null],
       ['s', isFocus ? flow.step : null],
     ]);
@@ -1964,16 +2385,18 @@ function createScene(host, { onSelect, onFocusRow } = {}) {
       st.data = s;
       const label = s.label || ['Tech Lead', 'Engenheiro', 'QA', 'DevOps'][i];
       let line2 = STATUS_PT[s.status];
-      if (s.status === 'active') line2 = s.step || 'Em andamento';
+      if (s.status === 'pending') line2 = STAGE_JOB[i];
+      else if (s.status === 'active') line2 = s.step || 'Em andamento';
       else if (s.status === 'done' && s.key === 'ship' && s.result) line2 = s.result.split('\n').pop();
-      else if (s.status === 'done' || s.status === 'failed') line2 = `${STATUS_PT[s.status]} em ${fmtDur(s.dur)}`;
+      else if (s.status === 'done') line2 = `${STAGE_DID[i]} em ${fmtDur(s.dur)}`;
+      else if (s.status === 'failed') line2 = `Reprovou em ${fmtDur(s.dur)}`;
       const meta = [s.attempts > 1 ? (s.key === 'build' ? `retrabalho ${s.attempts - 1}` : `${s.attempts}ª tentativa`) : null, s.skill && isFocus ? `skill ${s.skill}` : null].filter(Boolean).join(' · ');
       fillCard(st.label.card, [
         ['n', label],
         ['s', isFocus ? line2 : null],
         ['m', isFocus ? meta : null],
       ]);
-      st.label.obj.position.y = NODE_Y + (isFocus && i % 2 ? 2.9 : 1.6);
+      st.label.obj.position.y = NODE_Y + (isFocus && i % 2 ? 4.3 : 2.0);
       st.label.card.className = `fcard stage ${s.status} ${s.agentStatus || ''} ${isFocus ? 'focus' : 'quiet'} ${selected && s.agentId === selected ? 'sel' : ''}`;
       // activity slabs: newest on top
       const steps = s.steps || [];
@@ -1981,6 +2404,8 @@ function createScene(host, { onSelect, onFocusRow } = {}) {
         const step = steps[steps.length - MAX_SLABS + k] || null;
         slab.visible = !!step;
         if (step) {
+          const g = iconGeometry(iconFor(stepCat(step)));
+          if (slab.geometry !== g) slab.geometry = g;
           slab.material.color.copy(slabColor(step));
           slab.material.opacity = 0.35 + 0.65 * ((k + 1) / MAX_SLABS);
         }
@@ -1991,7 +2416,7 @@ function createScene(host, { onSelect, onFocusRow } = {}) {
     const ship = run?.stages[3];
     const shipped = ship?.status === 'done';
     fillCard(row.gitLabel.card, [
-      ['n', 'Git'],
+      ['n', 'Git (repositório)'],
       ['s', shipped ? 'Entregue' : run?.status === 'blocked' ? 'Bloqueado pelo QA' : isFocus ? 'Aguardando DevOps' : null],
       ['m', isFocus && flow.completed ? `${flow.completed} entrega${flow.completed > 1 ? 's' : ''} nesta sessão` : null],
     ]);
@@ -2267,7 +2692,7 @@ function createScene(host, { onSelect, onFocusRow } = {}) {
       const pp = r.curve.getPointAt(Math.min(1, Math.max(0, r.packetU)));
       const bob = reduceMotion ? 0 : Math.sin(t * 3) * 0.08;
       r.packet.position.set(pp.x, pp.y + 0.55 + bob + (r.packetIdx > 0 && r.packetIdx < 5 ? 1.45 : 0.35), pp.z);
-      if (!reduceMotion) r.packet.rotation.set(t * 0.9, t * 1.2, 0);
+      if (!reduceMotion) r.packet.rotation.set(0, t * 1.4, 0);
       const pc = run?.status === 'blocked' ? pal.error : run?.status === 'complete' ? pal.thinking : pal.focus;
       r.packet.material.color.copy(pc);
       r.packet.material.emissive.copy(pc).multiplyScalar(0.7);
@@ -2315,13 +2740,17 @@ const { createHistoryScene } = (() => {
 
 
 
+
+
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const ROW_W = 28;
 const ROW_GAP = 7;
-const GAP = { turn: 1.8, tool: 0.52, agent: 2.2 };
+const GAP = { turn: 2.4, tool: 0.82, agent: 3.4 };
 const MAX_ITEMS = 1500;
 const STAGE_LABEL = { plan: 'Tech Lead', build: 'Engenheiro', test: 'QA', ship: 'DevOps' };
+const STAGE_DONE = { plan: 'planejou a tarefa', build: 'escreveu o código', test: 'testou o resultado', ship: 'enviou para o GitHub' };
+const STAGE_DOING = { plan: 'planejando', build: 'escrevendo o código', test: 'testando', ship: 'enviando para o GitHub' };
 
 function glowTexture() {
   const c = document.createElement('canvas');
@@ -2376,15 +2805,14 @@ function createHistoryScene(host, { onSelectTurn, onHover } = {}) {
   let pal = {};
   let light = false;
   function readPalette() {
-    const keys = ['sky', 'panel', 'ink', 'ink-2', 'ink-3', 'running', 'thinking', 'waiting', 'error', 'idle', 'focus'];
+    const keys = ['sky', 'panel', 'ink', 'ink-2', 'ink-3', 'running', 'thinking', 'waiting', 'error', 'idle', 'focus', 'c-read', 'c-search', 'c-edit', 'c-write', 'c-exec', 'c-web', 'c-skill', 'c-task', 'c-mcp', 'c-agent'];
     pal = Object.fromEntries(keys.map((k) => [k, new THREE.Color(css('--' + k))]));
     light = pal.sky.getHSL({}).l > 0.5;
     scene.background = pal.sky;
     scene.fog = new THREE.Fog(pal.sky, 70, 220);
   }
   readPalette();
-  const catColor = (cat, err) =>
-    err ? pal.error : { read: pal['ink-3'], edit: pal.thinking, exec: pal.running, web: pal.waiting, mcp: pal.focus, delegate: pal.ink, other: pal['ink-2'] }[cat] || pal['ink-2'];
+  const catColor = (cat, err) => (err ? pal.error : pal['c-' + cat] || pal['ink-2']);
 
   const geo = {
     tool: new THREE.BoxGeometry(0.32, 0.32, 0.32),
@@ -2496,58 +2924,60 @@ function createHistoryScene(host, { onSelectTurn, onHover } = {}) {
     floor.position.set(0, -0.5, -((rows - 1) * ROW_GAP) / 2);
     root.add(floor);
 
-    // tools as one instanced mesh
+    // tools: one instanced mesh per icon (document, magnifier, pencil, terminal, globe…)
     const toolItems = items.filter((i) => i.kind === 'tool');
-    const tools = new THREE.InstancedMesh(geo.tool, new THREE.MeshStandardMaterial({ roughness: 0.4, metalness: 0.1 }), Math.max(1, toolItems.length));
-    tools.count = toolItems.length;
+    const byIcon = new Map();
+    for (const it of toolItems) {
+      const key = iconFor(it.ref.cat);
+      if (!byIcon.has(key)) byIcon.set(key, []);
+      byIcon.get(key).push(it);
+    }
+    const toolMeshes = [];
     const m4 = new THREE.Matrix4();
-    toolItems.forEach((it, k) => {
-      const p = posAt(it.s);
-      m4.makeTranslation(p.x, 0.12, p.z);
-      tools.setMatrixAt(k, m4);
-      tools.setColorAt(k, catColor(it.ref.cat, it.ref.err));
-      it.index = k;
-    });
-    if (tools.instanceColor) tools.instanceColor.needsUpdate = true;
-    tools.userData.items = toolItems;
-    root.add(tools);
+    const q = new THREE.Quaternion();
+    const one = new THREE.Vector3(1.2, 1.2, 1.2);
+    for (const [key, list] of byIcon) {
+      const mesh = new THREE.InstancedMesh(iconGeometry(key), iconMaterial(), list.length);
+      list.forEach((it, k) => {
+        const p = posAt(it.s);
+        m4.compose(new THREE.Vector3(p.x, 0.2, p.z), q, one);
+        mesh.setMatrixAt(k, m4);
+        mesh.setColorAt(k, catColor(it.ref.cat, it.ref.err));
+      });
+      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+      mesh.userData.items = list;
+      root.add(mesh);
+      toolMeshes.push(mesh);
+    }
 
-    // turn gates
+    // your messages: speech bubbles
     const gates = [];
     const turnItems = items.filter((i) => i.kind === 'turn');
     for (const it of turnItems) {
       const p = posAt(it.s);
       const g = new THREE.Group();
       g.position.copy(p);
-      const ring = new THREE.Mesh(geo.gate, new THREE.MeshStandardMaterial({ color: pal.focus, emissive: pal.focus, emissiveIntensity: 0.35, roughness: 0.3 }));
-      ring.position.y = 0.55;
-      ring.rotation.y = Math.PI / 2;
-      const core = new THREE.Mesh(geo.gateCore, new THREE.MeshStandardMaterial({ color: pal.focus, emissive: pal.focus, emissiveIntensity: 0.5 }));
-      core.position.y = 0.55;
+      const bubble = new THREE.Mesh(iconGeometry('prompt'), iconMaterial({ color: pal.focus, emissive: pal.focus, emissiveIntensity: 0.25 }));
+      bubble.position.y = 0.75;
+      bubble.scale.setScalar(1.45);
       const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, transparent: true, depthWrite: false, color: pal.focus, opacity: 0 }));
-      halo.scale.setScalar(2.6);
-      halo.position.y = 0.55;
-      g.add(ring, core, halo);
-      for (const m of [ring, core]) m.userData.pick = { kind: 'turn', turn: it.turn };
+      halo.scale.setScalar(2.8);
+      halo.position.y = 0.75;
+      const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.5, 8), new THREE.MeshBasicMaterial({ color: pal.focus, transparent: true, opacity: 0.6 }));
+      stem.position.y = 0.2;
+      g.add(stem, bubble, halo);
+      bubble.userData.pick = { kind: 'turn', turn: it.turn };
       root.add(g);
-      gates.push({ g, ring, core, halo, it });
+      gates.push({ g, bubble, halo, it });
     }
 
-    // agents: branch off the belt toward the camera
+    // helper agents: a branch off the belt toward the camera, robot or pipeline-stage icon
     const agents = [];
     for (const it of items.filter((i) => i.kind === 'agent')) {
       const a = it.ref;
       const p = posAt(it.s);
-      const node = new THREE.Vector3(p.x, 0.35, p.z + 2.1);
-      const color = a.stage
-        ? a.verdict === 'fail' || a.err
-          ? pal.error
-          : a.end || !a.live
-            ? pal.thinking
-            : pal.running
-        : a.err
-          ? pal.error
-          : pal.ink;
+      const node = new THREE.Vector3(p.x, 0.55, p.z + 2.2);
+      const color = a.verdict === 'fail' || a.err ? pal.error : a.stage ? (a.end || !a.live ? pal.thinking : pal.running) : pal['c-agent'];
       const arm = new THREE.Mesh(
         new THREE.TubeGeometry(new THREE.CatmullRomCurve3([p.clone().setY(-0.12), new THREE.Vector3(p.x, -0.12, p.z + 1.2), node.clone().setY(-0.12)]), 10, 0.04, 6, false),
         new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.7 })
@@ -2556,24 +2986,27 @@ function createHistoryScene(host, { onSelectTurn, onHover } = {}) {
       const pad = new THREE.Mesh(geo.pad, new THREE.MeshStandardMaterial({ color: pal.panel, roughness: 0.8, transparent: true, opacity: 0.9 }));
       pad.position.set(node.x, -0.42, node.z);
       root.add(pad);
-      const shape = new THREE.Mesh(a.stage ? geo[a.stage] : geo.agent, new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.4, roughness: 0.35 }));
+      const shape = new THREE.Mesh(iconGeometry(a.stage || 'agent'), iconMaterial({ color, emissive: color, emissiveIntensity: 0.18 }));
       shape.position.copy(node);
+      shape.scale.setScalar(1.7);
       shape.userData.pick = { kind: 'agent', agent: a, turn: it.turn };
       root.add(shape);
-      // its own steps as a short line of mini cubes
-      const n = Math.min(a.tools.length, 14);
+      // what this agent did, as small icons in front of it
+      const n = Math.min(a.tools.length, 10);
       for (let k = 0; k < n; k++) {
         const tl = a.tools[a.tools.length - n + k];
-        const c = new THREE.Mesh(geo.mini, new THREE.MeshStandardMaterial({ color: catColor(tl.cat, tl.err), roughness: 0.5 }));
-        c.position.set(node.x + (k - (n - 1) / 2) * 0.23, -0.28, node.z + 0.95);
+        const c = new THREE.Mesh(iconGeometry(iconFor(tl.cat)), iconMaterial({ color: catColor(tl.cat, tl.err) }));
+        c.scale.setScalar(0.5);
+        c.position.set(node.x + (k - (n - 1) / 2) * 0.3, -0.2, node.z + 1.0);
         root.add(c);
       }
-      let lab = null;
-      if (a.stage) {
-        lab = label(`stage ${a.verdict === 'fail' ? 'failed' : a.end ? 'done' : 'active'} quiet`, [['n', STAGE_LABEL[a.stage]]]);
-        lab.o.position.set(node.x, node.y + 0.75, node.z);
-        root.add(lab.o);
-      }
+      const doing = !a.end && a.live;
+      const title = a.stage ? STAGE_LABEL[a.stage] : agentLabel(a.type);
+      const sub = a.stage ? (a.verdict === 'fail' ? 'reprovou: volta para o Engenheiro' : a.verdict === 'pass' ? 'aprovou o resultado' : doing ? STAGE_DOING[a.stage] : STAGE_DONE[a.stage]) : clip(a.desc || 'agente ajudante', 34);
+      const lab = label(`stage ${a.verdict === 'fail' ? 'failed' : doing ? 'active' : 'done'} quiet`, [['n', title], ['m', sub]]);
+      // alternate heights so neighbouring agent cards don't cover each other
+      lab.o.position.set(node.x, node.y + (agents.length % 2 ? 2.35 : 1.05), node.z);
+      root.add(lab.o);
       agents.push({ shape, it, lab });
     }
 
@@ -2591,8 +3024,8 @@ function createHistoryScene(host, { onSelectTurn, onHover } = {}) {
     nowLabel.o.position.set(tail.x, 0.9, tail.z);
     nowLabel.o.visible = isLive;
 
-    model = { id: h.meta.id, items, gates, agents, tools, turnLabel, head, length, rows, count: items.length, firstTurn: keepFrom };
-    const pickables = [tools, ...gates.flatMap((g) => [g.ring, g.core]), ...agents.map((a) => a.shape)];
+    model = { id: h.meta.id, items, gates, agents, toolMeshes, turnLabel, head, length, rows, count: items.length, firstTurn: keepFrom };
+    const pickables = [...toolMeshes, ...gates.map((g) => g.bubble), ...agents.map((a) => a.shape)];
     model.pickables = pickables;
     if (selectedTurn != null && !turnItems.some((x) => x.turn.n === selectedTurn)) selectedTurn = null;
     applySelection();
@@ -2615,10 +3048,11 @@ function createHistoryScene(host, { onSelectTurn, onHover } = {}) {
     tl.card.replaceChildren();
     if (gate) {
       const t = gate.it.turn;
-      tl.card.appendChild(el('div', 'n', `Prompt ${t.n + 1}`));
-      tl.card.appendChild(el('div', 't', t.prompt ? t.prompt.slice(0, 90) : '(início da sessão)'));
-      tl.card.appendChild(el('div', 'm', `${t.tools.length} ferramenta${t.tools.length === 1 ? '' : 's'}${t.agents.length ? `, ${t.agents.length} subagente${t.agents.length > 1 ? 's' : ''}` : ''}`));
-      tl.o.position.set(gate.g.position.x, 1.5, gate.g.position.z);
+      tl.card.appendChild(el('div', 'n', t.prompt ? `Seu pedido nº ${t.n + 1}` : 'Começo do chat'));
+      tl.card.appendChild(el('div', 't', t.prompt ? t.prompt.slice(0, 90) : 'O Claude trabalhou antes do primeiro pedido'));
+      const n = t.tools.length;
+      tl.card.appendChild(el('div', 'm', `${n ? `O Claude fez ${n} ${n === 1 ? 'ação' : 'ações'}` : t.agents.length ? 'O Claude' : 'Só respondeu, sem usar ferramentas'}${t.agents.length ? ` ${n ? 'e ' : ''}chamou ${t.agents.length} ${t.agents.length > 1 ? 'agentes' : 'agente'}` : ''}`));
+      tl.o.position.set(gate.g.position.x, 1.55, gate.g.position.z);
       tl.o.visible = true;
     } else tl.o.visible = false;
   }
@@ -2674,8 +3108,8 @@ function createHistoryScene(host, { onSelectTurn, onHover } = {}) {
     ray.setFromCamera(mouse, camera);
     const hit = ray.intersectObjects(model.pickables, false)[0];
     if (!hit) return null;
-    if (hit.object === model.tools) {
-      const it = model.tools.userData.items[hit.instanceId];
+    if (hit.object.isInstancedMesh) {
+      const it = hit.object.userData.items[hit.instanceId];
       return it ? { kind: 'tool', tool: it.ref, turn: it.turn } : null;
     }
     return hit.object.userData.pick;
@@ -2740,9 +3174,10 @@ function createHistoryScene(host, { onSelectTurn, onHover } = {}) {
       if (u >= 1) fly = null;
     }
     if (model && !reduceMotion) {
-      for (const g of model.gates) g.ring.rotation.x += dt * 0.4;
+      const sel = selectedTurn ?? model.gates[model.gates.length - 1]?.it.turn.n;
+      for (const g of model.gates) g.bubble.position.y = 0.75 + (g.it.turn.n === sel ? Math.sin(simT * 2.5) * 0.08 : 0);
       if (model.head.visible) model.head.scale.setScalar(1 + 0.25 * Math.sin(simT * 5));
-      for (const a of model.agents) if (a.it.ref.stage && !a.it.ref.end && live) a.shape.rotation.y += dt * 1.5;
+      for (const a of model.agents) if (!a.it.ref.end && live) a.shape.rotation.y = Math.sin(simT * 2) * 0.5;
     }
     controls.update();
     renderer.render(scene, camera);
@@ -2774,6 +3209,8 @@ return { createHistoryScene };
 
 
 
+
+
 const $ = (s) => document.querySelector(s);
 const STATUS_PT = {
   running: 'Executando',
@@ -2789,6 +3226,49 @@ const STATUS_PT = {
 const STAGE_PT = { pending: 'Aguardando', active: 'Em andamento', done: 'Concluído', failed: 'Reprovado', stale: 'Sem atividade' };
 const RUN_PT = { running: 'Em andamento', complete: 'Entregue', blocked: 'Bloqueado pelo QA', waiting: 'Aguardando próxima etapa' };
 const STAGE_LABEL = { plan: 'Tech Lead', build: 'Engenheiro', test: 'QA', ship: 'DevOps' };
+// what each stage does, in plain words
+const STAGE_DESC = {
+  plan: 'Lê o seu pedido e o código, e escreve um plano: o que mudar e como saber se ficou certo.',
+  build: 'Segue o plano e faz as mudanças no código.',
+  test: 'Confere se cada item do plano foi atendido e dá o veredito: aprovado ou reprovado.',
+  ship: 'Salva as mudanças (commit), envia para o Git e abre o pedido de revisão (pull request).',
+};
+/** Friendly name for a subagent: "Tech Lead" instead of "agent-fleet-3d:tech-lead". */
+const agentName = (a) => (a.stage ? STAGE_LABEL[a.stage] : agentLabel(a.type));
+// all actions in a turn, including the ones its helper agents did
+const turnActions = (t) => t.tools.length + t.agents.reduce((n, a) => n + (a.tools?.length || 0), 0);
+const VERDICT_PT = { pass: 'O QA aprovou', fail: 'O QA reprovou' };
+// short badge for the chat list, by chatStatus()
+const BADGE = { waiting: ['waiting', 'esperando você'], working: ['running', 'trabalhando'], blocked: ['error', 'barrado no QA'], error: ['error', 'terminou com erro'], shipped: ['thinking', 'entregue no Git'] };
+const iconEl = (key, cls = '') => {
+  const s = document.createElement('span');
+  s.className = `ic c-${key} ${cls}`;
+  s.innerHTML = icon2d(key);
+  return s;
+};
+const iconKey = (cat) => (cat === 'delegate' ? 'agent' : cat);
+const COUNT_PT = {
+  read: ['leu 1 arquivo', 'leu # arquivos'],
+  search: ['fez 1 busca no código', 'fez # buscas no código'],
+  edit: ['editou 1 arquivo', 'editou # arquivos'],
+  write: ['criou 1 arquivo', 'criou # arquivos'],
+  exec: ['rodou 1 comando', 'rodou # comandos'],
+  web: ['pesquisou 1 vez na web', 'pesquisou # vezes na web'],
+  skill: ['consultou 1 skill', 'consultou # skills'],
+  task: ['atualizou a lista de tarefas', 'atualizou a lista de tarefas'],
+  mcp: ['usou 1 conector', 'usou # conectores'],
+  other: ['fez mais 1 ação', 'fez mais # ações'],
+};
+/** "Leu 3 arquivos, editou 2 arquivos e rodou 1 comando." */
+function actionSummary(tools) {
+  const n = {};
+  for (const t of tools) n[t.cat || 'other'] = (n[t.cat || 'other'] || 0) + 1;
+  const parts = Object.keys(COUNT_PT).filter((k) => n[k]).map((k) => COUNT_PT[k][n[k] > 1 ? 1 : 0].replace('#', n[k]));
+  if (!parts.length) return '';
+  const txt = parts.length > 1 ? parts.slice(0, -1).join(', ') + ' e ' + parts[parts.length - 1] : parts[0];
+  return txt.charAt(0).toUpperCase() + txt.slice(1) + '.';
+}
+const secs = (ms) => (ms < 60000 ? `${Math.max(0.1, ms / 1000).toFixed(1).replace('.', ',')}s` : dur(ms));
 
 const store = {
   get(k, d) {
@@ -3013,7 +3493,9 @@ function renderList() {
         renderList();
       });
       h.setAttribute('aria-expanded', String(open));
-      h.append(el('span', 'chev', open ? '▾' : '▸'), el('span', 'gname', g.label), el('span', 'gcount', String(g.chats.length)));
+      h.append(el('span', 'chev', open ? '▾' : '▸'));
+      if (ui.group === 'status') h.append(el('span', `dot ${(BADGE[g.key] || ['idle'])[0]}`));
+      h.append(el('span', 'gname', g.label), el('span', 'gcount', String(g.chats.length)));
       if (g.sub) h.title = g.sub;
       sec.append(h);
     }
@@ -3023,10 +3505,16 @@ function renderList() {
         const row = el('div', 'row');
         row.append(el('span', 'name', c.title), el('span', 'when', ago(c.updated)));
         const meta = el('div', 'cmeta');
-        if (c.live) meta.append(el('span', `dot ${c.status || 'running'}`));
+        const badge = BADGE[chatStatus(c)];
+        if (badge) {
+          const bd = el('span', `cstat ${badge[0]}`);
+          bd.append(el('span', `dot ${badge[0]}`), document.createTextNode(badge[1]));
+          if (ui.group !== 'status') meta.append(bd);
+          else meta.append(el('span', `dot ${badge[0]}`));
+        }
         if (ui.group !== 'project') meta.append(el('span', 'proj', c.project?.name || ''));
-        if (c.branch) meta.append(el('span', 'branch', c.branch));
-        meta.append(el('span', 'counts', `${plural(c.prompts, 'prompt', 'prompts')}${c.errors ? `, ${plural(c.errors, 'erro', 'erros')}` : ''}`));
+        if (c.branch && !badge) meta.append(el('span', 'branch', c.branch));
+        meta.append(el('span', 'counts', plural(c.prompts, 'pedido', 'pedidos')));
         const parts = [row, meta];
         const st = chatStages(c);
         if (st) parts.push(pipeBar(st, true));
@@ -3111,10 +3599,12 @@ function renderTitle(d) {
     ch.append(el('b', null, String(b)), document.createTextNode(' ' + text));
     chips.append(ch);
   };
-  if (d.live) chip('running', '●', STATUS_PT[d.status] ? STATUS_PT[d.status].toLowerCase() : 'ativo agora');
-  chip('', m.prompts, m.prompts === 1 ? 'prompt' : 'prompts');
-  chip('', m.tools, m.tools === 1 ? 'ferramenta' : 'ferramentas');
-  if (m.agents) chip('', m.agents, m.agents === 1 ? 'subagente' : 'subagentes');
+  const cs = CHAT_STATUS.find((x) => x.key === chatStatus({ ...m, live: d.live, status: d.status }));
+  if (cs) chip(`st ${(BADGE[cs.key] || ['idle'])[0]}`, '●', cs.label.toLowerCase());
+  chip('', m.prompts, m.prompts === 1 ? 'pedido seu' : 'pedidos seus');
+  const acts = d.turns.reduce((n, t) => n + turnActions(t), 0);
+  chip('', acts, acts === 1 ? 'ação' : 'ações');
+  if (m.agents) chip('', m.agents, m.agents === 1 ? 'agente ajudante' : 'agentes ajudantes');
   if (m.errors) chip('error', m.errors, m.errors === 1 ? 'erro' : 'erros');
   if (m.cost != null) chip('', money(m.cost), '');
 }
@@ -3124,15 +3614,21 @@ function renderHistoryDrawer(d) {
   const body = $('#d-body');
   head.replaceChildren();
   body.replaceChildren();
-  head.append(el('h3', null, 'Histórico'), el('p', null, 'Cada anel na esteira é um prompt; os cubos depois dele são as ferramentas usadas. Clique num prompt para ver os detalhes.'));
-  if (d.meta.skills?.length) head.append(el('p', 'skills', `Skills usadas: ${d.meta.skills.join(', ')}`));
+  const m = d.meta;
+  head.append(
+    el('h3', null, 'O que aconteceu neste chat'),
+    el('p', null, `Você fez ${plural(m.prompts, 'pedido', 'pedidos')} e o Claude realizou ${plural(d.turns.reduce((n, t) => n + turnActions(t), 0), 'ação', 'ações')} para atender${m.agents ? `, com a ajuda de ${plural(m.agents, 'agente', 'agentes')}` : ''}.`),
+    el('p', 'how', 'Na cena 3D, cada balão é um pedido seu. Os ícones que vêm depois mostram, em ordem, o que o Claude fez: ler um arquivo, editar, rodar um comando, pesquisar na web… Os robôs são agentes que ele chamou para ajudar. Clique num pedido para ver tudo o que aconteceu nele.'),
+  );
+  if (m.skills?.length) head.append(el('p', 'skills', `Skills (manuais de instruções) consultadas: ${m.skills.join(', ')}`));
   const ol = el('ol', 'turns');
   const sel = ui.turn ?? d.turns[d.turns.length - 1]?.n;
   for (const t of d.turns) {
     const li = el('li');
     li.dataset.turn = t.n;
     const on = t.n === sel;
-    const b = button('turn-btn' + (on ? ' on' : ''), () => selectTurn(t.n), el('span', 'tn', String(t.n + 1)), el('span', 'tp', t.prompt || '(início da sessão)'), el('span', 'tm', `${plural(t.tools.length, 'ferramenta', 'ferramentas')}${t.agents.length ? `, ${plural(t.agents.length, 'subagente', 'subagentes')}` : ''}, ${ago(t.t)}`));
+    const errs = t.tools.filter((x) => x.err).length;
+    const b = button('turn-btn' + (on ? ' on' : ''), () => selectTurn(t.n), el('span', 'tn', String(t.n + 1)), el('span', 'tp', t.prompt || '(início da conversa)'), el('span', 'tm', [plural(turnActions(t), 'ação', 'ações'), t.agents.length ? plural(t.agents.length, 'agente', 'agentes') : null, errs ? plural(errs, 'erro', 'erros') : null, ago(t.t)].filter(Boolean).join(' · ')));
     li.append(b);
     if (on) li.append(turnDetail(t));
     ol.append(li);
@@ -3142,39 +3638,55 @@ function renderHistoryDrawer(d) {
 
 function turnDetail(t) {
   const box = el('div', 'turn-detail');
-  if (t.prompt) box.append(el('p', 'full-prompt', t.prompt));
+  if (t.prompt) {
+    box.append(el('p', 'sub-h', 'O que você pediu'));
+    box.append(el('p', 'full-prompt', t.prompt));
+  }
+  if (t.tools.length) {
+    const sum = actionSummary(t.tools);
+    if (sum) box.append(el('p', 'summary', sum));
+  }
   if (t.reply) {
-    box.append(el('p', 'sub-h', 'Resposta'));
+    box.append(el('p', 'sub-h', 'O que o Claude respondeu'));
     box.append(el('p', 'reply', t.reply));
   }
   if (t.agents.length) {
-    box.append(el('p', 'sub-h', 'Subagentes'));
+    box.append(el('p', 'sub-h', t.agents.length > 1 ? 'Agentes que ajudaram' : 'Agente que ajudou'));
     const ul = el('ul', 'agents');
     for (const a of t.agents) {
-      const name = a.stage ? STAGE_LABEL[a.stage] : a.type;
       const st = a.verdict === 'fail' || a.err ? 'error' : a.end ? 'done' : 'running';
-      const b = el('div', 'agent-row');
-      b.append(el('span', `dot ${st}`), el('span', 'n', name), el('span', 's', a.desc || ''));
-      if (a.verdict) b.append(el('span', 's ' + a.verdict, a.verdict === 'pass' ? 'Veredito: aprovado' : 'Veredito: reprovado'));
+      const b = el('div', `agent-row ${st}`);
+      b.append(iconEl(a.stage || 'agent'), el('span', 'n', agentName(a)), el('span', 's', a.desc || ''));
+      if (a.verdict) b.append(el('span', 's ' + a.verdict, VERDICT_PT[a.verdict]));
+      else if (a.err) b.append(el('span', 's fail', `Deu erro: ${a.err}`));
       else if (a.result) b.append(el('span', 's', a.result));
-      if (a.end && a.t) b.append(el('span', 'm', `${plural(a.tools.length, 'passo', 'passos')}, ${dur(a.end - a.t)}`));
+      if (a.end && a.t) b.append(el('span', 'm', [plural(a.tools.length, 'ação', 'ações'), dur(a.end - a.t)].filter(Boolean).join(' em ')));
+      else if (!a.end) b.append(el('span', 'm', 'Ainda trabalhando…'));
       ul.append(item(b));
     }
     box.append(ul);
   }
   if (t.tools.length) {
-    box.append(el('p', 'sub-h', 'Ferramentas'));
-    const tl = el('ol', 'timeline');
-    for (const s of t.tools) {
-      const li = el('li', s.err ? 'error' : 'done');
-      li.append(el('div', 't', s.step));
-      li.append(el('div', 'm', [s.name, s.end && s.t ? `${((s.end - s.t) / 1000).toFixed(1)}s` : null].filter(Boolean).join(', ')));
-      if (s.err) li.append(el('div', 'err', s.err));
-      tl.append(li);
-    }
-    box.append(tl);
+    box.append(el('p', 'sub-h', 'O que o Claude fez, passo a passo'));
+    box.append(stepList(t.tools.map((s) => ({ ...s, ms: s.end && s.t ? s.end - s.t : null }))));
   }
   return box;
+}
+
+/** Step list with an icon per action: what it did (bold), what kind of action it is and how long it took. */
+function stepList(steps) {
+  const tl = el('ol', 'steps');
+  for (const s of steps) {
+    const cat = s.cat || stepCategory(s.tool || s.name, s.step);
+    const li = el('li', s.err || s.st === 'error' ? 'error' : s.st === 'running' ? 'running' : 'done');
+    li.append(iconEl(s.err || s.st === 'error' ? 'error' : iconKey(cat)));
+    const txt = el('div', 'txt');
+    txt.append(el('div', 't', s.step), el('div', 'm', [KIND_PT[cat] || 'Ação', s.st === 'running' ? 'agora' : null, s.ms != null ? secs(s.ms) : null].filter(Boolean).join(' · ')));
+    if (s.err) txt.append(el('div', 'err', `Deu erro: ${s.err}`));
+    li.append(txt);
+    tl.append(li);
+  }
+  return tl;
 }
 
 // ----- pipeline drawer (same content as the project flow view)
@@ -3188,13 +3700,15 @@ function renderPipelineDrawer(det) {
     const f = det.flows[0];
     const s = f?.run?.stages.find((x) => x.key === ui.sel.key);
     const def = STAGES.find((x) => x.key === ui.sel.key);
-    head.append(back(), el('h3', null, def.label), el('p', null, `${def.verb}. ${s ? STAGE_PT[s.status] : 'Aguardando'}${s?.dur && s.status !== 'pending' ? `, ${dur(s.dur)}` : ''}.`));
+    const h3 = el('h3', 'with-ic');
+    h3.append(iconEl(def.key), document.createTextNode(def.label));
+    head.append(back(), h3, el('p', null, STAGE_DESC[def.key]), el('p', 'how', `Situação: ${(s ? STAGE_PT[s.status] : 'Aguardando').toLowerCase()}${s?.dur && s.status !== 'pending' ? `, levou ${dur(s.dur)}` : ''}.`));
     const a = s?.agentId && det.agents.find((x) => x.id === s.agentId);
-    if (!a) return body.append(el('p', 'hint pad', 'Esta etapa ainda não começou.'));
+    if (!a) return body.append(el('p', 'hint pad', 'Esta etapa ainda não começou. Ela começa quando a etapa anterior terminar.'));
     if (s.history?.length > 1) {
       body.append(el('p', 'sub-h pad', 'Tentativas'));
       const ul = el('ul', 'agents');
-      s.history.forEach((h, i) => ul.append(item(button('agent-btn', () => selectStage({ type: 'agent', id: h.id }), el('span', `dot ${h.verdict === 'fail' ? 'error' : h.status}`), el('span', 'n', `${i + 1}ª tentativa`), el('span', 's', h.verdict ? (h.verdict === 'pass' ? 'aprovado' : 'reprovado') : STATUS_PT[h.status] || '')))));
+      s.history.forEach((h, i) => ul.append(item(button('agent-btn', () => selectStage({ type: 'agent', id: h.id }), el('span', `dot ${h.verdict === 'fail' ? 'error' : h.status}`), el('span', 'n', `${i + 1}ª tentativa`), el('span', 's', h.verdict ? (h.verdict === 'pass' ? 'aprovada' : 'reprovada') : STATUS_PT[h.status] || '')))));
       body.append(ul);
     }
     body.append(...agentTimeline(a));
@@ -3203,11 +3717,15 @@ function renderPipelineDrawer(det) {
   if (ui.sel?.type === 'agent') {
     const a = det.agents.find((x) => x.id === ui.sel.id);
     if (a) {
-      head.append(back(), el('h3', null, a.label), el('p', null, `${STATUS_PT[a.status] || a.status}: ${a.step}`));
+      head.append(back(), el('h3', null, a.kind === 'main' ? 'Claude (coordenador)' : agentName({ stage: a.stage, type: a.type || a.label })), el('p', null, `${STATUS_PT[a.status] || a.status}: ${a.step}`));
       return body.append(...agentTimeline(a));
     }
   }
-  head.append(el('h3', null, 'Pipeline'), el('p', null, 'Tech Lead planeja, Engenheiro implementa, QA testa e DevOps sobe para o git. Clique numa etapa para ver os passos.'));
+  head.append(
+    el('h3', null, 'Pipeline de entrega'),
+    el('p', null, 'Seu pedido passa por 4 especialistas, um depois do outro: o Tech Lead planeja, o Engenheiro escreve o código, o QA testa e, se estiver tudo certo, o DevOps envia para o Git.'),
+    el('p', 'how', 'Se o QA reprovar, o trabalho volta para o Engenheiro corrigir e depois é testado de novo. Clique numa etapa para ver o que ela fez.'),
+  );
   for (const f of det.flows) {
     if (!f.run) continue;
     const box = el('section', 'flow focus');
@@ -3217,37 +3735,31 @@ function renderPipelineDrawer(det) {
     const ol = el('ol', 'stages');
     for (const s of f.run.stages) {
       const meta = [STAGE_PT[s.status], s.dur && s.status !== 'pending' ? dur(s.dur) : null, s.attempts > 1 ? `${s.attempts} tentativas` : null].filter(Boolean).join(', ');
-      const b = button(`stage-btn ${s.status}`, () => selectStage({ type: 'stage', sid: f.sid, key: s.key }), el('span', 'dot'), el('span', 'n', s.label), el('span', 'm', meta));
+      const b = button(`stage-btn ${s.status}`, () => selectStage({ type: 'stage', sid: f.sid, key: s.key }), iconEl(s.key), el('span', 'n', s.label), el('span', 'm', meta));
+      if (s.status === 'pending') b.append(el('span', 's', STAGE_DESC[s.key]));
       if (s.status === 'active') b.append(el('span', 's', s.step || ''));
-      if (s.key === 'test' && s.verdict) b.append(el('span', 's ' + s.verdict, s.verdict === 'pass' ? 'Veredito: aprovado' : 'Veredito: reprovado'));
+      if (s.key === 'test' && s.verdict) b.append(el('span', 's ' + s.verdict, VERDICT_PT[s.verdict]));
       if (s.key === 'ship' && s.status === 'done' && s.result) b.append(el('span', 's', s.result.split('\n').pop()));
       ol.append(item(b));
     }
     box.append(ol);
-    if (f.run.reworks) box.append(el('p', 'hint', `O QA devolveu para o Engenheiro ${f.run.reworks} vez${f.run.reworks > 1 ? 'es' : ''}.`));
-    if (f.runs > 1) box.append(el('p', 'hint', `Este chat rodou o pipeline ${f.runs} vezes; a cena mostra a mais recente.`));
+    if (f.run.reworks) box.append(el('p', 'hint', `O QA encontrou problemas e devolveu para o Engenheiro corrigir ${f.run.reworks === 1 ? '1 vez' : `${f.run.reworks} vezes`}.`));
+    if (f.runs > 1) box.append(el('p', 'hint', `Este chat passou pelo pipeline ${f.runs} vezes; a cena mostra a última.`));
     body.append(box);
   }
 }
 function agentTimeline(a) {
   const dl = el('dl', 'facts');
   const fact = (k, v) => v != null && v !== '' && dl.append(el('dt', null, k), el('dd', null, String(v)));
-  fact('Agente', a.kind === 'main' ? 'Sessão principal (orquestrador)' : a.type);
-  fact('Estado', STATUS_PT[a.status] || a.status);
-  fact('Skill', a.skill || 'nenhuma');
-  fact('Ferramentas', a.tools);
+  fact('Quem é', a.kind === 'main' ? 'O Claude, coordenando o trabalho' : agentName({ stage: a.stage, type: a.type }));
+  fact('Situação', STATUS_PT[a.status] || a.status);
+  if (a.skill) fact('Skill consultada', a.skill);
+  fact('Ações feitas', a.tools);
   if (a.errors) fact('Erros', a.errors);
-  fact('Início', ago(a.started));
+  fact('Começou', ago(a.started));
   if (a.result) fact('Resultado', a.result);
-  const tl = el('ol', 'timeline');
-  for (const s of [...a.steps].reverse()) {
-    const li = el('li', s.st);
-    li.append(el('div', 't', s.step));
-    li.append(el('div', 'm', [s.tool, ago(s.t), s.dur != null ? `${(s.dur / 1000).toFixed(1)}s` : null].filter(Boolean).join(', ')));
-    if (s.err) li.append(el('div', 'err', s.err));
-    tl.append(li);
-  }
-  return [dl, tl];
+  const title = el('p', 'sub-h pad', 'Passo a passo (o mais recente primeiro)');
+  return [dl, title, stepList([...a.steps].reverse().map((s) => ({ ...s, ms: s.dur })))];
 }
 
 function renderStage() {
@@ -3257,6 +3769,8 @@ function renderStage() {
   $('#drawer').hidden = !d;
   $('#recenter').hidden = !d;
   $('#views').hidden = !(d && hasPipeline());
+  $('#legend-history').hidden = !d || ui.view !== 'history';
+  $('#legend-pipeline').hidden = !d || ui.view !== 'pipeline';
   const inset = d ? $('#drawer').offsetWidth + 24 : 0;
   history.setInset(inset);
   pipeline.setInset(inset);
@@ -3286,14 +3800,14 @@ function showTip(p, at) {
   if (!p || ui.view !== 'history') return (tip.hidden = true);
   tip.replaceChildren();
   if (p.kind === 'tool') {
-    tip.append(el('b', null, p.tool.step), el('span', null, `${p.tool.name}${p.tool.err ? ', com erro' : ''}, no prompt ${p.turn.n + 1}`));
-    if (p.tool.err) tip.append(el('span', 'err', p.tool.err));
+    tip.append(el('b', null, p.tool.step), el('span', null, `${KIND_PT[p.tool.cat] || 'Ação'} · no seu pedido nº ${p.turn.n + 1}`));
+    if (p.tool.err) tip.append(el('span', 'err', `Deu erro: ${p.tool.err}`));
   } else if (p.kind === 'agent') {
     const a = p.agent;
-    tip.append(el('b', null, a.stage ? STAGE_LABEL[a.stage] : a.type), el('span', null, a.desc || ''));
-    if (a.verdict) tip.append(el('span', null, a.verdict === 'pass' ? 'Veredito: aprovado' : 'Veredito: reprovado'));
+    tip.append(el('b', null, agentName(a)), el('span', null, a.desc || ''));
+    if (a.verdict) tip.append(el('span', null, VERDICT_PT[a.verdict]));
   } else if (p.kind === 'turn') {
-    tip.append(el('b', null, `Prompt ${p.turn.n + 1}`), el('span', null, (p.turn.prompt || '(início da sessão)').slice(0, 140)));
+    tip.append(el('b', null, `Seu pedido nº ${p.turn.n + 1}`), el('span', null, (p.turn.prompt || '(início da conversa)').slice(0, 140)), el('span', null, 'Clique para ver os detalhes'));
   }
   tip.style.left = `${Math.min(at.x + 14, (tip.parentElement.clientWidth || 800) - 280)}px`;
   tip.style.top = `${at.y + 14}px`;
@@ -3313,6 +3827,27 @@ function render() {
     renderFooter();
   });
 }
+
+// ------------------------------------------------------------------ legends (same icons as the 3D scene)
+function fillLegends() {
+  const add = (box, key, text, cls = '') => {
+    const sp = el('span', cls);
+    sp.append(iconEl(key), document.createTextNode(text));
+    box.append(sp);
+  };
+  const lh = $('#legend-history');
+  for (const [k, t] of [['prompt', 'Seu pedido'], ['read', 'Leu arquivo'], ['search', 'Buscou no código'], ['edit', 'Editou'], ['write', 'Criou arquivo'], ['exec', 'Rodou comando'], ['web', 'Web'], ['skill', 'Skill'], ['mcp', 'Conector'], ['agent', 'Agente ajudante'], ['error', 'Deu erro']]) add(lh, k, t);
+  const lp = $('#legend-pipeline');
+  for (const [k, t] of [['plan', 'Tech Lead planeja'], ['build', 'Engenheiro programa'], ['test', 'QA testa'], ['ship', 'DevOps envia'], ['git', 'Git']]) add(lp, k, t);
+  const sep = el('span', 'sep');
+  lp.append(sep);
+  for (const [c, t] of [['idle', 'aguardando'], ['running', 'trabalhando'], ['thinking', 'concluído'], ['error', 'reprovado']]) {
+    const sp = el('span');
+    sp.append(el('i', `dot ${c}`), document.createTextNode(t));
+    lp.append(sp);
+  }
+}
+fillLegends();
 
 // ------------------------------------------------------------------ controls
 $('#filter').addEventListener('input', (e) => {

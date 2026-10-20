@@ -46,9 +46,9 @@ test('project list shows live projects and marks stale agents', () => {
 test('hook input becomes a compact event', () => {
   const ev = toEvent({ hook_event_name: 'PreToolUse', session_id: 's', cwd: '/tmp', tool_name: 'Read', tool_input: { file_path: '/x/skills-library/quality/seo/SKILL.md' }, tool_use_id: 'u1' });
   assert.equal(ev.skill, 'seo');
-  assert.equal(ev.step, 'Lendo skill seo');
-  assert.equal(summarize('mcp__github__create_pull_request', {}), 'create_pull_request (github)');
-  assert.equal(summarize('Bash', { command: 'npm test', description: 'Run tests' }), 'Run tests');
+  assert.equal(ev.step, 'Leu as instruções da skill seo');
+  assert.equal(summarize('mcp__github__create_pull_request', {}), 'Usou o conector github: create pull request');
+  assert.equal(summarize('Bash', { command: 'npm test', description: 'Run tests' }), 'Rodou no terminal: Run tests');
 });
 
 import { stageOf, verdictOf } from '../shared/fleet-core.mjs';

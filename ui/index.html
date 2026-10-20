@@ -27,6 +27,7 @@
           <select id="group">
             <option value="date">Por data</option>
             <option value="project">Por projeto</option>
+            <option value="status">Por status</option>
             <option value="none">Sem grupos</option>
           </select>
         </label>
@@ -76,22 +77,8 @@
       <div class="body" id="d-body"></div>
     </section>
 
-    <div class="overlay legend" id="legend-history" aria-hidden="true">
-      <span><i style="background:var(--focus)"></i>Prompt</span>
-      <span><i style="background:var(--ink-3)"></i>Leitura</span>
-      <span><i style="background:var(--thinking)"></i>Edição</span>
-      <span><i style="background:var(--running)"></i>Comando</span>
-      <span><i style="background:var(--waiting)"></i>Web</span>
-      <span><i style="background:var(--ink)"></i>Subagente</span>
-      <span><i style="background:var(--error)"></i>Erro</span>
-    </div>
-    <div class="overlay legend" id="legend-pipeline" aria-hidden="true" hidden>
-      <span><i style="background:var(--idle)"></i>Aguardando</span>
-      <span><i style="background:var(--running)"></i>Em andamento</span>
-      <span><i style="background:var(--thinking)"></i>Concluído</span>
-      <span><i style="background:var(--error)"></i>Reprovado ou erro</span>
-      <span><i style="background:var(--waiting)"></i>Aguardando você</span>
-    </div>
+    <div class="overlay legend" id="legend-history" aria-hidden="true"></div>
+    <div class="overlay legend" id="legend-pipeline" aria-hidden="true" hidden></div>
   </main>
 
   <script type="module" src="./app.js"></script>

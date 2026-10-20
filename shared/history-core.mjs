@@ -6,6 +6,12 @@ import { stageOf, verdictOf, createState, apply, projectDetail } from './fleet-c
 
 export const MAX_TOOLS_PER_HISTORY = 1500;
 
+/** Category for steps that only kept their text (live events). */
+export function stepCategory(tool, step = '') {
+  if (/instruções da skill|^Usou a skill/.test(step)) return 'skill';
+  return category(tool);
+}
+
 const ts = (s) => {
   const n = typeof s === 'number' ? s : Date.parse(s);
   return Number.isFinite(n) ? n : null;
@@ -67,7 +73,7 @@ function parseSubagent(lines) {
     if (l.type === 'assistant' && Array.isArray(l.message?.content)) {
       for (const b of l.message.content) {
         if (b?.type !== 'tool_use') continue;
-        const tool = { id: b.id, name: b.name, step: summarize(b.name, b.input), cat: category(b.name), t, skill: skillOf(b.name, b.input) };
+        const tool = { id: b.id, name: b.name, step: summarize(b.name, b.input), cat: category(b.name, b.input), t, skill: skillOf(b.name, b.input) };
         tools.push(tool);
         byId.set(b.id, tool);
       }
@@ -166,7 +172,7 @@ export function parseTranscript(lines, options = {}) {
             if (!meta.stages.includes(stage)) meta.stages.push(stage);
           }
         } else {
-          const tool = { id: b.id, name: b.name, step: summarize(b.name, input), cat: category(b.name), t, end: null, err: null, skill: skillOf(b.name, input) };
+          const tool = { id: b.id, name: b.name, step: summarize(b.name, input), cat: category(b.name, input), t, end: null, err: null, skill: skillOf(b.name, input) };
           if (tool.skill) skills.add(tool.skill);
           turn.tools.push(tool);
           turn.items.push({ kind: 'tool', ref: tool });
@@ -209,9 +215,25 @@ export function parseTranscript(lines, options = {}) {
   }
   meta.skills = [...skills];
   meta.title = meta.title || meta.aiTitle || meta.firstPrompt || 'Chat sem título';
+  Object.assign(meta, outcomeOf(turns));
   const project = options.project || { id: hashId(meta.cwd || meta.id || 'x'), name: (meta.cwd || '').split(/[/\\]/).filter(Boolean).pop() || 'sem pasta', root: meta.cwd || '' };
   meta.project = project;
   return { meta, turns, events: toEvents(meta, turns, project) };
+}
+
+/** How the chat ended: pipeline result (complete/blocked/partial) and errors in the last request. */
+export function outcomeOf(turns) {
+  const last = turns[turns.length - 1];
+  const lastErrors = last ? last.tools.filter((x) => x.err).length + last.agents.filter((a) => a.err).length : 0;
+  const staged = turns.flatMap((x) => x.agents).filter((a) => a.stage);
+  let pipelineStatus = null;
+  if (staged.length) {
+    const end = staged[staged.length - 1];
+    if (end.stage === 'ship' && !end.err) pipelineStatus = 'complete';
+    else if (end.stage === 'test' && end.verdict === 'fail') pipelineStatus = 'blocked';
+    else pipelineStatus = 'partial';
+  }
+  return { pipelineStatus, lastErrors };
 }
 
 /** Rebuilds the hook event stream so the fleet reducer can show the pipeline of any session. */
@@ -228,7 +250,7 @@ export function toEvents(meta, turns, proj) {
         out.push({ t: T(r.t), e: 'PreToolUse', sid, proj, tool: r.name, tuid: r.id, step: r.step, skill: r.skill || undefined });
         if (r.end) out.push({ t: T(r.end), e: r.err ? 'PostToolUseFailure' : 'PostToolUse', sid, proj, tool: r.name, tuid: r.id, err: r.err || undefined });
       } else {
-        out.push({ t: T(r.t), e: 'PreToolUse', sid, proj, tool: 'Agent', tuid: r.id, step: `Delegando: ${r.desc}`, delegate: { type: r.type, desc: r.desc } });
+        out.push({ t: T(r.t), e: 'PreToolUse', sid, proj, tool: 'Agent', tuid: r.id, step: `Chamou um agente: ${r.desc}`, delegate: { type: r.type, desc: r.desc } });
         out.push({ t: T(r.t), e: 'SubagentStart', sid, proj, aid: r.id, at: r.type });
         for (const tl of r.tools) {
           out.push({ t: T(tl.t), e: 'PreToolUse', sid, proj, aid: r.id, at: r.type, tool: tl.name, tuid: tl.id, step: tl.step, skill: tl.skill || undefined });
@@ -252,7 +274,7 @@ export function pipelineOf(events, sid, now) {
   const d = pid ? projectDetail(st, pid, now) : null;
   if (!d) return null;
   // History is not "live": keep finished stages finished even when old.
-  d.flows = d.flows.filter((f) => f.sid === sid).map((f) => ({ ...f, label: 'Orquestrador' }));
+  d.flows = d.flows.filter((f) => f.sid === sid).map((f) => ({ ...f, label: 'Seu pedido' }));
   return d;
 }
 
@@ -273,7 +295,7 @@ export function historyFromLive(detail, sid) {
     }
     if (s.tool === 'Router' || s.tool === 'Agent') continue;
     if (!turn) newTurn(s.t, null);
-    const tool = { id: s.id || `${s.t}`, name: s.tool, step: s.step, cat: category(s.tool), t: s.t, end: s.dur != null ? s.t + s.dur : null, err: s.err || null };
+    const tool = { id: s.id || `${s.t}`, name: s.tool, step: s.step, cat: stepCategory(s.tool, s.step), t: s.t, end: s.dur != null ? s.t + s.dur : null, err: s.err || null };
     turn.tools.push(tool);
     turn.items.push({ kind: 'tool', ref: tool });
   }
@@ -292,7 +314,7 @@ export function historyFromLive(detail, sid) {
       result: a.result,
       verdict: a.verdict,
       live: a.status !== 'done' && a.status !== 'ended',
-      tools: a.steps.map((s) => ({ id: s.id, name: s.tool, step: s.step, cat: category(s.tool), t: s.t, err: s.err || null })),
+      tools: a.steps.map((s) => ({ id: s.id, name: s.tool, step: s.step, cat: stepCategory(s.tool, s.step), t: s.t, err: s.err || null })),
     };
     target.agents.push(agent);
     // insert by time among items
@@ -300,6 +322,7 @@ export function historyFromLive(detail, sid) {
     target.items.splice(idx < 0 ? target.items.length : idx, 0, { kind: 'agent', ref: agent });
   }
   const tools = turns.reduce((n, x) => n + x.tools.length, 0);
+  const flow = detail.flows.find((f) => f.sid === sid);
   const stages = [...new Set(subs.map((a) => a.stage).filter(Boolean))];
   const meta = {
     id: sid,
@@ -321,7 +344,8 @@ export function historyFromLive(detail, sid) {
     skills: main.skill ? [main.skill] : [],
     project: { id: detail.id, name: detail.name, root: detail.root },
   };
-  const flow = detail.flows.find((f) => f.sid === sid);
+  Object.assign(meta, outcomeOf(turns));
+  if (flow?.run) meta.pipelineStatus = flow.run.status === 'complete' ? 'complete' : flow.run.status === 'blocked' ? 'blocked' : 'partial';
   meta.title = flow?.run?.task || meta.firstPrompt || main.label;
   return { meta, turns };
 }
@@ -360,6 +384,27 @@ export function filterChats(chats, { q = '', show = 'all' } = {}) {
   });
 }
 
+// Status groups, in the order they are listed (what needs you first).
+export const CHAT_STATUS = [
+  { key: 'waiting', label: 'Esperando sua resposta', hint: 'O Claude parou e está aguardando você' },
+  { key: 'working', label: 'Trabalhando agora', hint: 'O Claude está executando neste momento' },
+  { key: 'blocked', label: 'Barrado nos testes', hint: 'O QA reprovou e a entrega não foi para o Git' },
+  { key: 'error', label: 'Terminou com erro', hint: 'O último pedido teve alguma ação que falhou' },
+  { key: 'shipped', label: 'Entregue no Git', hint: 'Passou pelo pipeline inteiro e foi enviado' },
+  { key: 'done', label: 'Concluído', hint: 'Conversa encerrada sem pendências' },
+];
+const STATUS_ORDER = Object.fromEntries(CHAT_STATUS.map((x, i) => [x.key, i]));
+
+/** One status per chat, for the "Por status" grouping and the badge in the list. */
+export function chatStatus(c) {
+  if (c.live && c.status === 'waiting') return 'waiting';
+  if (c.live) return 'working';
+  if (c.pipelineStatus === 'blocked') return 'blocked';
+  if (c.lastErrors > 0 || c.status === 'error') return 'error';
+  if (c.pipelineStatus === 'complete') return 'shipped';
+  return 'done';
+}
+
 export function groupChats(chats, by = 'date', now = Date.now()) {
   const groups = new Map();
   const sorted = [...chats].sort((a, b) => (b.updated || 0) - (a.updated || 0));
@@ -367,12 +412,17 @@ export function groupChats(chats, by = 'date', now = Date.now()) {
     let g;
     if (by === 'project') g = { key: c.project?.root || c.project?.name || '-', label: c.project?.name || 'Sem pasta', sub: c.project?.root || '' };
     else if (by === 'none') g = { key: 'all', label: 'Todos os chats' };
+    else if (by === 'status') {
+      const st = CHAT_STATUS[STATUS_ORDER[chatStatus(c)]];
+      g = { key: st.key, label: st.label, sub: st.hint };
+    }
     else g = dateGroup(c.updated || c.created || 0, now);
     if (!groups.has(g.key)) groups.set(g.key, { ...g, chats: [] });
     groups.get(g.key).chats.push(c);
   }
   const out = [...groups.values()];
   if (by === 'date') out.sort((a, b) => a.key.localeCompare(b.key));
+  else if (by === 'status') out.sort((a, b) => STATUS_ORDER[a.key] - STATUS_ORDER[b.key]);
   else out.sort((a, b) => (b.chats[0].updated || 0) - (a.chats[0].updated || 0));
   return out;
 }

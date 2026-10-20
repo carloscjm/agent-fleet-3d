@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { parseTranscript, promptText, pipelineOf, filterChats, groupChats, dateGroup } from '../shared/history-core.mjs';
+import { parseTranscript, promptText, pipelineOf, filterChats, groupChats, dateGroup, chatStatus } from '../shared/history-core.mjs';
 import { demoTranscripts } from '../shared/history-demo.mjs';
 
 const T0 = Date.parse('2026-10-20T12:00:00Z');
@@ -67,7 +67,7 @@ test('demo transcripts rebuild a pipeline with rework', () => {
   const run = d.flows[0].run;
   assert.equal(run.status, 'complete');
   assert.equal(run.reworks, 1);
-  assert.equal(d.flows[0].label, 'Orquestrador');
+  assert.equal(d.flows[0].label, 'Seu pedido');
 });
 
 test('chat filter and grouping', () => {
@@ -100,4 +100,23 @@ test('server index reads every session on disk, cached by mtime', async () => {
   const d = h.detail('sess-1');
   assert.equal(d.turns.length, 2);
   assert.equal(d.pipeline.flows[0].run.stages[2].status, 'failed');
+});
+
+test('status grouping puts what needs you first', () => {
+  const now = Date.now();
+  const metas = demoTranscripts(now).map((t) => parseTranscript(t.lines, { subagents: t.subagents }).meta);
+  const statuses = new Set(metas.map((m) => chatStatus(m)));
+  assert.ok(statuses.has('shipped'), 'some demo chat went all the way to git');
+  assert.ok(statuses.has('done'));
+  const chats = [
+    { id: 'a', updated: 5, pipelineStatus: 'complete' },
+    { id: 'b', updated: 4, live: true, status: 'waiting' },
+    { id: 'c', updated: 3, pipelineStatus: 'blocked' },
+    { id: 'd', updated: 2, lastErrors: 2 },
+    { id: 'e', updated: 1, live: true, status: 'running' },
+    { id: 'f', updated: 0 },
+  ];
+  const g = groupChats(chats, 'status');
+  assert.deepEqual(g.map((x) => x.key), ['waiting', 'working', 'blocked', 'error', 'shipped', 'done']);
+  assert.equal(g[0].label, 'Esperando sua resposta');
 });

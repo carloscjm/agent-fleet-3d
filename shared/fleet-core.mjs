@@ -330,38 +330,38 @@ const DEMO_PROJECTS = [
 ];
 const STAGE_TOOLS = {
   plan: [
-    ['Read', 'Lendo skill tlc-plan'],
-    ['Glob', 'Glob src/**/*.ts'],
-    ['Grep', 'Grep "processPayment"'],
-    ['Read', 'Read src/payments/service.ts'],
-    ['Read', 'Read package.json'],
-    ['Write', 'Write PLAN.md'],
+    ['Read', 'Leu as instruções da skill tlc-plan'],
+    ['Glob', 'Listou arquivos src/**/*.ts'],
+    ['Grep', 'Procurou "processPayment" no código'],
+    ['Read', 'Leu o arquivo service.ts'],
+    ['Read', 'Leu o arquivo package.json'],
+    ['Write', 'Criou o arquivo PLAN.md'],
   ],
   build: [
-    ['Read', 'Lendo skill tlc-implement'],
-    ['Read', 'Read PLAN.md'],
-    ['Edit', 'Edit retry-policy.ts'],
-    ['Edit', 'Edit service.ts'],
-    ['Write', 'Write retry-policy.spec.ts'],
-    ['Bash', 'Rodar testes unitários'],
-    ['Bash', 'npm run lint'],
-    ['Write', 'Write IMPLEMENTATION.md'],
+    ['Read', 'Leu as instruções da skill tlc-implement'],
+    ['Read', 'Leu o arquivo PLAN.md'],
+    ['Edit', 'Editou o arquivo retry-policy.ts'],
+    ['Edit', 'Editou o arquivo service.ts'],
+    ['Write', 'Criou o arquivo retry-policy.spec.ts'],
+    ['Bash', 'Rodou no terminal: testes unitários'],
+    ['Bash', 'Rodou no terminal: npm run lint'],
+    ['Write', 'Criou o arquivo IMPLEMENTATION.md'],
   ],
   test: [
-    ['Read', 'Lendo skill spec-driven-eval'],
-    ['Read', 'Read PLAN.md'],
-    ['Bash', 'git diff'],
-    ['Bash', 'Rodar testes unitários'],
-    ['Bash', 'npm run build'],
-    ['Write', 'Write QA.md'],
+    ['Read', 'Leu as instruções da skill spec-driven-eval'],
+    ['Read', 'Leu o arquivo PLAN.md'],
+    ['Bash', 'Rodou no terminal: git diff'],
+    ['Bash', 'Rodou no terminal: testes unitários'],
+    ['Bash', 'Rodou no terminal: npm run build'],
+    ['Write', 'Criou o arquivo QA.md'],
   ],
   ship: [
-    ['Bash', 'git status'],
-    ['Bash', 'git checkout -b feat/retry-idempotente'],
-    ['Bash', 'git add src/payments'],
-    ['Bash', 'git commit -m "feat(pagamentos): retry com idempotência"'],
-    ['Bash', 'git push -u origin feat/retry-idempotente'],
-    ['Bash', 'gh pr create'],
+    ['Bash', 'Rodou no terminal: git status'],
+    ['Bash', 'Rodou no terminal: git checkout -b feat/retry-idempotente'],
+    ['Bash', 'Rodou no terminal: git add src/payments'],
+    ['Bash', 'Rodou no terminal: git commit'],
+    ['Bash', 'Rodou no terminal: git push'],
+    ['mcp__github__create_pull_request', 'Usou o conector github: create pull request'],
   ],
 };
 const ORDER = ['plan', 'build', 'test', 'ship'];
@@ -400,7 +400,7 @@ export function startDemo(emit, { speed = 1, rand = Math.random } = {}) {
     const at = `agent-fleet-3d:${role}`;
     const tuid = `d${aid}`;
     const desc = { plan: `Planejar: ${s.taskName}`, build: s.failedOnce && s.reworkPending ? 'Retrabalho do QA' : `Implementar: ${s.taskName}`, test: `Testar: ${s.taskName}`, ship: 'Subir para o git' }[key];
-    emit({ t, e: 'PreToolUse', sid: s.sid, proj: s.proj, tool: 'Agent', tuid, step: `Delegando: ${desc}`, delegate: { type: at, desc } });
+    emit({ t, e: 'PreToolUse', sid: s.sid, proj: s.proj, tool: 'Agent', tuid, step: `Chamou um agente: ${desc}`, delegate: { type: at, desc } });
     emit({ t, e: 'SubagentStart', sid: s.sid, proj: s.proj, aid, at });
     s.stage = { key, aid, at, tuid, ticks: 0, target: 5 + Math.floor(rand() * 5), open: null };
     s.phase = key;
@@ -461,7 +461,7 @@ export function startDemo(emit, { speed = 1, rand = Math.random } = {}) {
     const tuid = `t${(n++).toString(36)}`;
     st.open = [tool, step, tuid];
     st.ticks++;
-    const skill = step.startsWith('Lendo skill ') ? step.slice(12) : undefined;
+    const skill = step.startsWith('Leu as instruções da skill ') ? step.slice(27) : undefined;
     emit({ ...base, e: 'PreToolUse', tool, step, tuid, skill });
   };
   const id = setInterval(tick, Math.max(90, 450 / speed));

@@ -1,10 +1,12 @@
 // 3D delivery flow for one project. Each main session is a row:
-//   Sessão (orquestrador) → Tech Lead → Engenheiro → QA → DevOps → Git
+//   Seu pedido → Tech Lead → Engenheiro → QA → DevOps → Git
 // joined by a conveyor. The work packet travels to the active station, finished
 // segments light up, and a rework arc links QA back to the Engineer when QA rejects.
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+import { iconGeometry, iconMaterial, iconFor } from './icons3d.js';
+import { stepCategory } from '../shared/history-core.mjs';
 
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
@@ -13,6 +15,9 @@ const ROW_GAP = 9.5;
 const NODE_X = [-14, -8.4, -2.8, 2.8, 8.4, 14]; // origin, plan, build, test, ship, git
 const STAGE_KEYS = ['plan', 'build', 'test', 'ship'];
 const MAX_SLABS = 8;
+// what each station does, in plain words (shown while it hasn't started yet)
+const STAGE_JOB = ['Vai planejar', 'Vai programar', 'Vai testar', 'Vai enviar ao Git'];
+const STAGE_DID = ['Planejou', 'Programou', 'Aprovou', 'Enviou'];
 const STATUS_PT = {
   pending: 'Aguardando',
   active: 'Em andamento',
@@ -36,14 +41,6 @@ function glowTexture() {
   return t;
 }
 
-function category(tool = '') {
-  if (/^(Read|Grep|Glob|LS)$/.test(tool)) return 'read';
-  if (/^(Edit|Write|MultiEdit|NotebookEdit)$/.test(tool)) return 'edit';
-  if (tool === 'Bash') return 'exec';
-  if (/^Web/.test(tool)) return 'web';
-  if (tool === 'Agent' || tool === 'Task') return 'delegate';
-  return 'other';
-}
 
 function el(tag, cls, text) {
   const e = document.createElement(tag);
@@ -86,7 +83,7 @@ export function createScene(host, { onSelect, onFocusRow } = {}) {
   let pal = {};
   let light = false;
   function readPalette() {
-    const keys = ['sky', 'panel', 'ink', 'ink-2', 'ink-3', 'running', 'thinking', 'waiting', 'error', 'idle', 'focus'];
+    const keys = ['sky', 'panel', 'ink', 'ink-2', 'ink-3', 'running', 'thinking', 'waiting', 'error', 'idle', 'focus', 'c-read', 'c-search', 'c-edit', 'c-write', 'c-exec', 'c-web', 'c-skill', 'c-task', 'c-mcp', 'c-agent'];
     pal = Object.fromEntries(keys.map((k) => [k, new THREE.Color(css('--' + k))]));
     pal.line = new THREE.Color(css('--ink-3'));
     light = pal.sky.getHSL({}).l > 0.5;
@@ -96,8 +93,12 @@ export function createScene(host, { onSelect, onFocusRow } = {}) {
   readPalette();
   const stageColor = (s) =>
     ({ pending: pal.idle, active: s.agentStatus === 'waiting' ? pal.waiting : s.agentStatus === 'error' ? pal.error : pal.running, done: pal.thinking, failed: pal.error, stale: pal.idle })[s.status] || pal.idle;
-  const slabColor = (st) =>
-    st.st === 'error' ? pal.error : st.st === 'running' ? pal.running : { read: pal['ink-3'], edit: pal.thinking, exec: pal.running, web: pal.waiting, delegate: pal.ink, other: pal['ink-2'] }[category(st.tool)];
+  const stepCat = (st) => stepCategory(st.tool, st.step);
+  const slabColor = (st) => {
+    if (st.st === 'error') return pal.error;
+    const c = stepCat(st);
+    return pal['c-' + (c === 'delegate' ? 'agent' : c)] || pal['ink-2'];
+  };
 
   // ------------------------------------------------------------ floor
   const floorMat = new THREE.LineBasicMaterial({ transparent: true, opacity: 0.18 });
@@ -122,15 +123,6 @@ export function createScene(host, { onSelect, onFocusRow } = {}) {
   // ------------------------------------------------------------ shared geometry
   const geo = {
     pad: new THREE.CylinderGeometry(1.35, 1.5, 0.22, 6),
-    plan: new THREE.OctahedronGeometry(0.62, 0),
-    build: new THREE.BoxGeometry(0.85, 0.85, 0.85),
-    test: new THREE.TorusGeometry(0.5, 0.13, 12, 40),
-    testCore: new THREE.SphereGeometry(0.24, 20, 12),
-    ship: new THREE.ConeGeometry(0.48, 1.1, 6),
-    origin: new THREE.SphereGeometry(0.5, 32, 16),
-    git: new THREE.CylinderGeometry(0.55, 0.55, 0.18, 32),
-    slab: new THREE.BoxGeometry(0.55, 0.12, 0.55),
-    packet: new THREE.BoxGeometry(0.42, 0.42, 0.42),
     ring: new THREE.TorusGeometry(1.75, 0.04, 8, 64),
     dot: new THREE.SphereGeometry(0.09, 10, 8),
     other: new THREE.SphereGeometry(0.2, 16, 10),
@@ -195,8 +187,10 @@ export function createScene(host, { onSelect, onFocusRow } = {}) {
     }
 
     // origin (session / orchestrator)
-    const origin = new THREE.Mesh(geo.origin, new THREE.MeshStandardMaterial({ roughness: 0.3, emissiveIntensity: 0.6 }));
-    origin.position.set(NODE_X[0], NODE_Y + 0.15, 0);
+    // the chat itself: a speech bubble (your request starts the flow)
+    const origin = new THREE.Mesh(iconGeometry('prompt'), iconMaterial({ emissiveIntensity: 0.6 }));
+    origin.scale.setScalar(2);
+    origin.position.set(NODE_X[0], NODE_Y + 0.3, 0);
     origin.userData.pick = { kind: 'main', sid: flow.sid };
     group.add(origin);
     pickables.push(origin);
@@ -225,16 +219,13 @@ export function createScene(host, { onSelect, onFocusRow } = {}) {
       const pad = new THREE.Mesh(geo.pad, new THREE.MeshStandardMaterial({ roughness: 0.75, transparent: true }));
       pad.position.y = -0.5;
       sg.add(pad);
-      const mat = new THREE.MeshStandardMaterial({ roughness: 0.3, metalness: 0.15, emissiveIntensity: 0.6, transparent: true });
+      // station icon: clipboard (plan), gear (build), shield (test), rocket (ship)
+      const mat = iconMaterial({ emissiveIntensity: 0.6, transparent: true });
       const body = new THREE.Group();
-      const main = new THREE.Mesh(geo[key], mat);
+      const main = new THREE.Mesh(iconGeometry(key), mat);
+      main.scale.setScalar(2.6);
       body.add(main);
-      if (key === 'test') {
-        const core = new THREE.Mesh(geo.testCore, mat);
-        body.add(core);
-      }
-      if (key === 'ship') main.position.y = 0.1;
-      body.position.y = NODE_Y + 0.35;
+      body.position.y = NODE_Y + 0.45;
       sg.add(body);
       for (const m of body.children) {
         m.userData.pick = { kind: 'stage', sid: flow.sid, key };
@@ -250,10 +241,12 @@ export function createScene(host, { onSelect, onFocusRow } = {}) {
       ring.rotation.x = Math.PI / 2;
       ring.position.y = -0.36;
       sg.add(ring);
+      // the stage's latest actions, as small icons in a row behind the station
       const slabs = [];
       for (let k = 0; k < MAX_SLABS; k++) {
-        const s = new THREE.Mesh(geo.slab, new THREE.MeshBasicMaterial({ transparent: true }));
-        s.position.set(0, -0.3 + k * 0.17, -1.85);
+        const s = new THREE.Mesh(iconGeometry('other'), iconMaterial({ transparent: true }));
+        s.scale.setScalar(0.62);
+        s.position.set(-1.05 + (k % 4) * 0.7, -0.15 + Math.floor(k / 4) * 0.55, -1.9);
         s.visible = false;
         sg.add(s);
         slabs.push(s);
@@ -261,19 +254,18 @@ export function createScene(host, { onSelect, onFocusRow } = {}) {
       const label = cardLabel('stage', () => onSelect?.({ sid: flow.sid, key }));
       label.obj.position.set(0, NODE_Y + (i % 2 ? 2.9 : 1.6), 0);
       sg.add(label.obj);
-      return { key, sg, pad, body, mat, halo, ring, slabs, label, data: null };
+      return { key, sg, pad, body, main, mat, halo, ring, slabs, label, data: null };
     });
 
     // git endpoint
     const git = new THREE.Group();
     git.position.set(NODE_X[5], 0, 0);
     group.add(git);
-    const gitMat = new THREE.MeshStandardMaterial({ roughness: 0.4, emissiveIntensity: 0.5 });
-    for (let k = 0; k < 3; k++) {
-      const d = new THREE.Mesh(geo.git, gitMat);
-      d.position.y = -0.2 + k * 0.32;
-      git.add(d);
-    }
+    const gitMat = iconMaterial({ emissiveIntensity: 0.5 });
+    const gitIcon = new THREE.Mesh(iconGeometry('git'), gitMat);
+    gitIcon.scale.setScalar(2.2);
+    gitIcon.position.y = NODE_Y + 0.3;
+    git.add(gitIcon);
     const gitLabel = cardLabel('git');
     gitLabel.obj.center.set(0.5, 0);
     gitLabel.obj.position.set(0, -0.9, 0.6);
@@ -312,7 +304,9 @@ export function createScene(host, { onSelect, onFocusRow } = {}) {
     group.add(arcLabel.obj);
 
     // work packet
-    const packet = new THREE.Mesh(geo.packet, new THREE.MeshStandardMaterial({ roughness: 0.25, emissiveIntensity: 0.9 }));
+    // the work order travelling between stations: a clipboard
+    const packet = new THREE.Mesh(iconGeometry('task'), iconMaterial({ emissiveIntensity: 0.9 }));
+    packet.scale.setScalar(0.95);
     const packetHalo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, transparent: true, depthWrite: false }));
     packetHalo.scale.setScalar(1.6);
     group.add(packet, packetHalo);
@@ -386,7 +380,7 @@ export function createScene(host, { onSelect, onFocusRow } = {}) {
     // origin card
     const runText = run ? `${run.task ? run.task : 'Pipeline'}${flow.runs > 1 ? ` · execução ${flow.runs}` : ''}` : 'Sem pipeline';
     fillCard(row.originLabel.card, [
-      ['n', flow.label],
+      ['n', 'Seu pedido'],
       ['t', isFocus ? runText : null],
       ['s', isFocus ? flow.step : null],
     ]);
@@ -398,16 +392,18 @@ export function createScene(host, { onSelect, onFocusRow } = {}) {
       st.data = s;
       const label = s.label || ['Tech Lead', 'Engenheiro', 'QA', 'DevOps'][i];
       let line2 = STATUS_PT[s.status];
-      if (s.status === 'active') line2 = s.step || 'Em andamento';
+      if (s.status === 'pending') line2 = STAGE_JOB[i];
+      else if (s.status === 'active') line2 = s.step || 'Em andamento';
       else if (s.status === 'done' && s.key === 'ship' && s.result) line2 = s.result.split('\n').pop();
-      else if (s.status === 'done' || s.status === 'failed') line2 = `${STATUS_PT[s.status]} em ${fmtDur(s.dur)}`;
+      else if (s.status === 'done') line2 = `${STAGE_DID[i]} em ${fmtDur(s.dur)}`;
+      else if (s.status === 'failed') line2 = `Reprovou em ${fmtDur(s.dur)}`;
       const meta = [s.attempts > 1 ? (s.key === 'build' ? `retrabalho ${s.attempts - 1}` : `${s.attempts}ª tentativa`) : null, s.skill && isFocus ? `skill ${s.skill}` : null].filter(Boolean).join(' · ');
       fillCard(st.label.card, [
         ['n', label],
         ['s', isFocus ? line2 : null],
         ['m', isFocus ? meta : null],
       ]);
-      st.label.obj.position.y = NODE_Y + (isFocus && i % 2 ? 2.9 : 1.6);
+      st.label.obj.position.y = NODE_Y + (isFocus && i % 2 ? 4.3 : 2.0);
       st.label.card.className = `fcard stage ${s.status} ${s.agentStatus || ''} ${isFocus ? 'focus' : 'quiet'} ${selected && s.agentId === selected ? 'sel' : ''}`;
       // activity slabs: newest on top
       const steps = s.steps || [];
@@ -415,6 +411,8 @@ export function createScene(host, { onSelect, onFocusRow } = {}) {
         const step = steps[steps.length - MAX_SLABS + k] || null;
         slab.visible = !!step;
         if (step) {
+          const g = iconGeometry(iconFor(stepCat(step)));
+          if (slab.geometry !== g) slab.geometry = g;
           slab.material.color.copy(slabColor(step));
           slab.material.opacity = 0.35 + 0.65 * ((k + 1) / MAX_SLABS);
         }
@@ -425,7 +423,7 @@ export function createScene(host, { onSelect, onFocusRow } = {}) {
     const ship = run?.stages[3];
     const shipped = ship?.status === 'done';
     fillCard(row.gitLabel.card, [
-      ['n', 'Git'],
+      ['n', 'Git (repositório)'],
       ['s', shipped ? 'Entregue' : run?.status === 'blocked' ? 'Bloqueado pelo QA' : isFocus ? 'Aguardando DevOps' : null],
       ['m', isFocus && flow.completed ? `${flow.completed} entrega${flow.completed > 1 ? 's' : ''} nesta sessão` : null],
     ]);
@@ -701,7 +699,7 @@ export function createScene(host, { onSelect, onFocusRow } = {}) {
       const pp = r.curve.getPointAt(Math.min(1, Math.max(0, r.packetU)));
       const bob = reduceMotion ? 0 : Math.sin(t * 3) * 0.08;
       r.packet.position.set(pp.x, pp.y + 0.55 + bob + (r.packetIdx > 0 && r.packetIdx < 5 ? 1.45 : 0.35), pp.z);
-      if (!reduceMotion) r.packet.rotation.set(t * 0.9, t * 1.2, 0);
+      if (!reduceMotion) r.packet.rotation.set(0, t * 1.4, 0);
       const pc = run?.status === 'blocked' ? pal.error : run?.status === 'complete' ? pal.thinking : pal.focus;
       r.packet.material.color.copy(pc);
       r.packet.material.emissive.copy(pc).multiplyScalar(0.7);

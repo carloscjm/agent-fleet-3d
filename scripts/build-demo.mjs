@@ -19,7 +19,7 @@ function scoped(src) {
   return `const { ${names.join(', ')} } = (() => {\n${body}\nreturn { ${names.join(', ')} };\n})();`;
 }
 // order matters: each module only sees the exports of the ones before it
-const modules = ['shared/steps.mjs', 'shared/fleet-core.mjs', 'shared/history-core.mjs', 'shared/history-demo.mjs', 'ui/scene.js', 'ui/scene-history.js'];
+const modules = ['shared/steps.mjs', 'shared/fleet-core.mjs', 'shared/history-core.mjs', 'shared/history-demo.mjs', 'ui/icons3d.js', 'ui/icons2d.js', 'ui/scene.js', 'ui/scene-history.js'];
 const threeImports = [...new Set(modules.flatMap((m) => read(m).match(/^import .* from '(three|three\/addons\/[^']+)';$/gm) || []))];
 const app = read('ui/app.js')
   .replace(/^import [\s\S]*? from '\.{1,2}\/[^']+';$/gm, '')

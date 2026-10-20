@@ -4,9 +4,9 @@ O dashboard mostra o histórico de cada chat e o pipeline como fluxos 3D. As dem
 
 ## Implementadas
 
-**Histórico do chat.** Uma esteira em serpentina por chat: cada prompt é um anel, cada ferramenta um cubo colorido pelo tipo, e cada subagente um ramal com a forma da sua etapa. Vale para qualquer chat salvo no computador, com ou sem o plugin.
+**Histórico do chat.** Uma esteira em serpentina por chat: cada pedido é um balão, cada ação um ícone 3D que diz o que ela é (página, lupa, lápis, terminal, globo, livro, prancheta, tomada) e cada agente ajudante um robô num ramal, ou o ícone da sua etapa no pipeline. Vale para qualquer chat salvo no computador, com ou sem o plugin. Os mesmos ícones, em 2D, aparecem na legenda e no painel da direita.
 
-**Fluxo do pipeline.** Uma linha por sessão: Sessão → Tech Lead → Engenheiro → QA → DevOps → Git, ligadas por uma esteira. Cada estação tem uma forma própria (octaedro para o plano, cubo para a construção, anel para o teste, foguete para a entrega) e muda de cor com o estado. O pacote de trabalho anda pela esteira até a etapa atual, os trechos já percorridos acendem, e um caminho no chão leva a tarefa do QA de volta ao Engenheiro quando ele reprova. Atrás de cada estação, uma pilha de placas mostra os últimos passos.
+**Fluxo do pipeline.** Uma linha por sessão: Seu pedido → Tech Lead → Engenheiro → QA → DevOps → Git, ligadas por uma esteira. Cada estação tem um ícone (balão para o pedido, prancheta para o plano, engrenagem para a construção, escudo para o teste, foguete para a entrega, branch para o Git) e muda de cor com o estado. Uma prancheta de trabalho anda pela esteira até a etapa atual, os trechos já percorridos acendem, e um caminho no chão leva a tarefa do QA de volta ao Engenheiro quando ele reprova. Atrás de cada estação, ícones pequenos mostram as últimas ações.
 
 As visões anteriores, **Órbitas** e **Trilhas**, foram substituídas pelo fluxo na versão 0.3.0.
 

@@ -25,7 +25,7 @@ const CHATS = [
   [0, 3, 'Investigar lentidão no /checkout', 'plain', ['o endpoint /checkout está lento em produção, investigue', 'adicione um índice na tabela orders', 'rode os testes de novo']],
   [1, 5, 'Explicar navegação do app', 'explore', ['me explique como a navegação do app funciona', 'onde fica o fluxo de login?']],
   [3, 20, 'Auditoria de acessibilidade', 'plain', ['faça uma auditoria de acessibilidade na landing page', 'corrija os contrastes apontados']],
-  [2, 27, 'Deduplicar eventos de pedido', 'pipeline', ['/agent-fleet-3d:pipeline deduplicar eventos de pedido']],
+  [2, 27, 'Deduplicar eventos de pedido', 'pipeline-blocked', ['/agent-fleet-3d:pipeline deduplicar eventos de pedido']],
   [4, 30, 'Mapear limites da API da Meta', 'plain', ['quais limites de mensagens por segundo a Cloud API tem?', 'escreva um resumo no docs/limites.md']],
   [1, 52, 'Tela de onboarding com biometria', 'pipeline-rework', ['/agent-fleet-3d:pipeline tela de onboarding com biometria']],
   [0, 70, 'ADR sobre fila de pagamentos', 'plain', ['crie um ADR registrando por que escolhemos SQS para a fila de pagamentos']],
@@ -109,6 +109,13 @@ export function demoTranscripts(now = Date.now(), seed = 7) {
       if (kind.startsWith('pipeline') && k === 0) {
         agent('agent-fleet-3d:tech-lead', `Planejar: ${title}`, 'PLAN.md com 4 tarefas e 5 critérios de aceite', STAGE_TOOLS['tech-lead']);
         agent('agent-fleet-3d:engineer', `Implementar: ${title}`, 'Testes passando, IMPLEMENTATION.md escrito', STAGE_TOOLS.engineer);
+        if (kind === 'pipeline-blocked') {
+          agent('agent-fleet-3d:qa', `Testar: ${title}`, '1 critério falhou: evento duplicado ainda passa em reenvio\nVEREDITO: REPROVADO', STAGE_TOOLS.qa);
+          agent('agent-fleet-3d:engineer', 'Retrabalho do QA', 'Tentativa de correção no consumidor', STAGE_TOOLS.engineer.slice(1));
+          agent('agent-fleet-3d:qa', `Testar: ${title}`, 'O mesmo critério continua falhando\nVEREDITO: REPROVADO', STAGE_TOOLS.qa);
+          say('O QA reprovou duas vezes. Parei antes de subir para o git: o reenvio ainda gera evento duplicado. Veja o QA.md.');
+          continue;
+        }
         if (kind === 'pipeline-rework') {
           agent('agent-fleet-3d:qa', `Testar: ${title}`, '2 critérios falharam: timeout não respeitado\nVEREDITO: REPROVADO', STAGE_TOOLS.qa);
           agent('agent-fleet-3d:engineer', 'Retrabalho do QA', 'Falhas do QA.md corrigidas', STAGE_TOOLS.engineer.slice(1));

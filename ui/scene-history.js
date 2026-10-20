@@ -4,14 +4,18 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+import { iconGeometry, iconMaterial, iconFor } from './icons3d.js';
+import { clip, agentLabel } from '../shared/steps.mjs';
 
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const ROW_W = 28;
 const ROW_GAP = 7;
-const GAP = { turn: 1.8, tool: 0.52, agent: 2.2 };
+const GAP = { turn: 2.4, tool: 0.82, agent: 3.4 };
 const MAX_ITEMS = 1500;
 const STAGE_LABEL = { plan: 'Tech Lead', build: 'Engenheiro', test: 'QA', ship: 'DevOps' };
+const STAGE_DONE = { plan: 'planejou a tarefa', build: 'escreveu o código', test: 'testou o resultado', ship: 'enviou para o GitHub' };
+const STAGE_DOING = { plan: 'planejando', build: 'escrevendo o código', test: 'testando', ship: 'enviando para o GitHub' };
 
 function glowTexture() {
   const c = document.createElement('canvas');
@@ -66,15 +70,14 @@ export function createHistoryScene(host, { onSelectTurn, onHover } = {}) {
   let pal = {};
   let light = false;
   function readPalette() {
-    const keys = ['sky', 'panel', 'ink', 'ink-2', 'ink-3', 'running', 'thinking', 'waiting', 'error', 'idle', 'focus'];
+    const keys = ['sky', 'panel', 'ink', 'ink-2', 'ink-3', 'running', 'thinking', 'waiting', 'error', 'idle', 'focus', 'c-read', 'c-search', 'c-edit', 'c-write', 'c-exec', 'c-web', 'c-skill', 'c-task', 'c-mcp', 'c-agent'];
     pal = Object.fromEntries(keys.map((k) => [k, new THREE.Color(css('--' + k))]));
     light = pal.sky.getHSL({}).l > 0.5;
     scene.background = pal.sky;
     scene.fog = new THREE.Fog(pal.sky, 70, 220);
   }
   readPalette();
-  const catColor = (cat, err) =>
-    err ? pal.error : { read: pal['ink-3'], edit: pal.thinking, exec: pal.running, web: pal.waiting, mcp: pal.focus, delegate: pal.ink, other: pal['ink-2'] }[cat] || pal['ink-2'];
+  const catColor = (cat, err) => (err ? pal.error : pal['c-' + cat] || pal['ink-2']);
 
   const geo = {
     tool: new THREE.BoxGeometry(0.32, 0.32, 0.32),
@@ -186,58 +189,60 @@ export function createHistoryScene(host, { onSelectTurn, onHover } = {}) {
     floor.position.set(0, -0.5, -((rows - 1) * ROW_GAP) / 2);
     root.add(floor);
 
-    // tools as one instanced mesh
+    // tools: one instanced mesh per icon (document, magnifier, pencil, terminal, globe…)
     const toolItems = items.filter((i) => i.kind === 'tool');
-    const tools = new THREE.InstancedMesh(geo.tool, new THREE.MeshStandardMaterial({ roughness: 0.4, metalness: 0.1 }), Math.max(1, toolItems.length));
-    tools.count = toolItems.length;
+    const byIcon = new Map();
+    for (const it of toolItems) {
+      const key = iconFor(it.ref.cat);
+      if (!byIcon.has(key)) byIcon.set(key, []);
+      byIcon.get(key).push(it);
+    }
+    const toolMeshes = [];
     const m4 = new THREE.Matrix4();
-    toolItems.forEach((it, k) => {
-      const p = posAt(it.s);
-      m4.makeTranslation(p.x, 0.12, p.z);
-      tools.setMatrixAt(k, m4);
-      tools.setColorAt(k, catColor(it.ref.cat, it.ref.err));
-      it.index = k;
-    });
-    if (tools.instanceColor) tools.instanceColor.needsUpdate = true;
-    tools.userData.items = toolItems;
-    root.add(tools);
+    const q = new THREE.Quaternion();
+    const one = new THREE.Vector3(1.2, 1.2, 1.2);
+    for (const [key, list] of byIcon) {
+      const mesh = new THREE.InstancedMesh(iconGeometry(key), iconMaterial(), list.length);
+      list.forEach((it, k) => {
+        const p = posAt(it.s);
+        m4.compose(new THREE.Vector3(p.x, 0.2, p.z), q, one);
+        mesh.setMatrixAt(k, m4);
+        mesh.setColorAt(k, catColor(it.ref.cat, it.ref.err));
+      });
+      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+      mesh.userData.items = list;
+      root.add(mesh);
+      toolMeshes.push(mesh);
+    }
 
-    // turn gates
+    // your messages: speech bubbles
     const gates = [];
     const turnItems = items.filter((i) => i.kind === 'turn');
     for (const it of turnItems) {
       const p = posAt(it.s);
       const g = new THREE.Group();
       g.position.copy(p);
-      const ring = new THREE.Mesh(geo.gate, new THREE.MeshStandardMaterial({ color: pal.focus, emissive: pal.focus, emissiveIntensity: 0.35, roughness: 0.3 }));
-      ring.position.y = 0.55;
-      ring.rotation.y = Math.PI / 2;
-      const core = new THREE.Mesh(geo.gateCore, new THREE.MeshStandardMaterial({ color: pal.focus, emissive: pal.focus, emissiveIntensity: 0.5 }));
-      core.position.y = 0.55;
+      const bubble = new THREE.Mesh(iconGeometry('prompt'), iconMaterial({ color: pal.focus, emissive: pal.focus, emissiveIntensity: 0.25 }));
+      bubble.position.y = 0.75;
+      bubble.scale.setScalar(1.45);
       const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, transparent: true, depthWrite: false, color: pal.focus, opacity: 0 }));
-      halo.scale.setScalar(2.6);
-      halo.position.y = 0.55;
-      g.add(ring, core, halo);
-      for (const m of [ring, core]) m.userData.pick = { kind: 'turn', turn: it.turn };
+      halo.scale.setScalar(2.8);
+      halo.position.y = 0.75;
+      const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.5, 8), new THREE.MeshBasicMaterial({ color: pal.focus, transparent: true, opacity: 0.6 }));
+      stem.position.y = 0.2;
+      g.add(stem, bubble, halo);
+      bubble.userData.pick = { kind: 'turn', turn: it.turn };
       root.add(g);
-      gates.push({ g, ring, core, halo, it });
+      gates.push({ g, bubble, halo, it });
     }
 
-    // agents: branch off the belt toward the camera
+    // helper agents: a branch off the belt toward the camera, robot or pipeline-stage icon
     const agents = [];
     for (const it of items.filter((i) => i.kind === 'agent')) {
       const a = it.ref;
       const p = posAt(it.s);
-      const node = new THREE.Vector3(p.x, 0.35, p.z + 2.1);
-      const color = a.stage
-        ? a.verdict === 'fail' || a.err
-          ? pal.error
-          : a.end || !a.live
-            ? pal.thinking
-            : pal.running
-        : a.err
-          ? pal.error
-          : pal.ink;
+      const node = new THREE.Vector3(p.x, 0.55, p.z + 2.2);
+      const color = a.verdict === 'fail' || a.err ? pal.error : a.stage ? (a.end || !a.live ? pal.thinking : pal.running) : pal['c-agent'];
       const arm = new THREE.Mesh(
         new THREE.TubeGeometry(new THREE.CatmullRomCurve3([p.clone().setY(-0.12), new THREE.Vector3(p.x, -0.12, p.z + 1.2), node.clone().setY(-0.12)]), 10, 0.04, 6, false),
         new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.7 })
@@ -246,24 +251,27 @@ export function createHistoryScene(host, { onSelectTurn, onHover } = {}) {
       const pad = new THREE.Mesh(geo.pad, new THREE.MeshStandardMaterial({ color: pal.panel, roughness: 0.8, transparent: true, opacity: 0.9 }));
       pad.position.set(node.x, -0.42, node.z);
       root.add(pad);
-      const shape = new THREE.Mesh(a.stage ? geo[a.stage] : geo.agent, new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.4, roughness: 0.35 }));
+      const shape = new THREE.Mesh(iconGeometry(a.stage || 'agent'), iconMaterial({ color, emissive: color, emissiveIntensity: 0.18 }));
       shape.position.copy(node);
+      shape.scale.setScalar(1.7);
       shape.userData.pick = { kind: 'agent', agent: a, turn: it.turn };
       root.add(shape);
-      // its own steps as a short line of mini cubes
-      const n = Math.min(a.tools.length, 14);
+      // what this agent did, as small icons in front of it
+      const n = Math.min(a.tools.length, 10);
       for (let k = 0; k < n; k++) {
         const tl = a.tools[a.tools.length - n + k];
-        const c = new THREE.Mesh(geo.mini, new THREE.MeshStandardMaterial({ color: catColor(tl.cat, tl.err), roughness: 0.5 }));
-        c.position.set(node.x + (k - (n - 1) / 2) * 0.23, -0.28, node.z + 0.95);
+        const c = new THREE.Mesh(iconGeometry(iconFor(tl.cat)), iconMaterial({ color: catColor(tl.cat, tl.err) }));
+        c.scale.setScalar(0.5);
+        c.position.set(node.x + (k - (n - 1) / 2) * 0.3, -0.2, node.z + 1.0);
         root.add(c);
       }
-      let lab = null;
-      if (a.stage) {
-        lab = label(`stage ${a.verdict === 'fail' ? 'failed' : a.end ? 'done' : 'active'} quiet`, [['n', STAGE_LABEL[a.stage]]]);
-        lab.o.position.set(node.x, node.y + 0.75, node.z);
-        root.add(lab.o);
-      }
+      const doing = !a.end && a.live;
+      const title = a.stage ? STAGE_LABEL[a.stage] : agentLabel(a.type);
+      const sub = a.stage ? (a.verdict === 'fail' ? 'reprovou: volta para o Engenheiro' : a.verdict === 'pass' ? 'aprovou o resultado' : doing ? STAGE_DOING[a.stage] : STAGE_DONE[a.stage]) : clip(a.desc || 'agente ajudante', 34);
+      const lab = label(`stage ${a.verdict === 'fail' ? 'failed' : doing ? 'active' : 'done'} quiet`, [['n', title], ['m', sub]]);
+      // alternate heights so neighbouring agent cards don't cover each other
+      lab.o.position.set(node.x, node.y + (agents.length % 2 ? 2.35 : 1.05), node.z);
+      root.add(lab.o);
       agents.push({ shape, it, lab });
     }
 
@@ -281,8 +289,8 @@ export function createHistoryScene(host, { onSelectTurn, onHover } = {}) {
     nowLabel.o.position.set(tail.x, 0.9, tail.z);
     nowLabel.o.visible = isLive;
 
-    model = { id: h.meta.id, items, gates, agents, tools, turnLabel, head, length, rows, count: items.length, firstTurn: keepFrom };
-    const pickables = [tools, ...gates.flatMap((g) => [g.ring, g.core]), ...agents.map((a) => a.shape)];
+    model = { id: h.meta.id, items, gates, agents, toolMeshes, turnLabel, head, length, rows, count: items.length, firstTurn: keepFrom };
+    const pickables = [...toolMeshes, ...gates.map((g) => g.bubble), ...agents.map((a) => a.shape)];
     model.pickables = pickables;
     if (selectedTurn != null && !turnItems.some((x) => x.turn.n === selectedTurn)) selectedTurn = null;
     applySelection();
@@ -305,10 +313,11 @@ export function createHistoryScene(host, { onSelectTurn, onHover } = {}) {
     tl.card.replaceChildren();
     if (gate) {
       const t = gate.it.turn;
-      tl.card.appendChild(el('div', 'n', `Prompt ${t.n + 1}`));
-      tl.card.appendChild(el('div', 't', t.prompt ? t.prompt.slice(0, 90) : '(início da sessão)'));
-      tl.card.appendChild(el('div', 'm', `${t.tools.length} ferramenta${t.tools.length === 1 ? '' : 's'}${t.agents.length ? `, ${t.agents.length} subagente${t.agents.length > 1 ? 's' : ''}` : ''}`));
-      tl.o.position.set(gate.g.position.x, 1.5, gate.g.position.z);
+      tl.card.appendChild(el('div', 'n', t.prompt ? `Seu pedido nº ${t.n + 1}` : 'Começo do chat'));
+      tl.card.appendChild(el('div', 't', t.prompt ? t.prompt.slice(0, 90) : 'O Claude trabalhou antes do primeiro pedido'));
+      const n = t.tools.length;
+      tl.card.appendChild(el('div', 'm', `${n ? `O Claude fez ${n} ${n === 1 ? 'ação' : 'ações'}` : t.agents.length ? 'O Claude' : 'Só respondeu, sem usar ferramentas'}${t.agents.length ? ` ${n ? 'e ' : ''}chamou ${t.agents.length} ${t.agents.length > 1 ? 'agentes' : 'agente'}` : ''}`));
+      tl.o.position.set(gate.g.position.x, 1.55, gate.g.position.z);
       tl.o.visible = true;
     } else tl.o.visible = false;
   }
@@ -364,8 +373,8 @@ export function createHistoryScene(host, { onSelectTurn, onHover } = {}) {
     ray.setFromCamera(mouse, camera);
     const hit = ray.intersectObjects(model.pickables, false)[0];
     if (!hit) return null;
-    if (hit.object === model.tools) {
-      const it = model.tools.userData.items[hit.instanceId];
+    if (hit.object.isInstancedMesh) {
+      const it = hit.object.userData.items[hit.instanceId];
       return it ? { kind: 'tool', tool: it.ref, turn: it.turn } : null;
     }
     return hit.object.userData.pick;
@@ -430,9 +439,10 @@ export function createHistoryScene(host, { onSelectTurn, onHover } = {}) {
       if (u >= 1) fly = null;
     }
     if (model && !reduceMotion) {
-      for (const g of model.gates) g.ring.rotation.x += dt * 0.4;
+      const sel = selectedTurn ?? model.gates[model.gates.length - 1]?.it.turn.n;
+      for (const g of model.gates) g.bubble.position.y = 0.75 + (g.it.turn.n === sel ? Math.sin(simT * 2.5) * 0.08 : 0);
       if (model.head.visible) model.head.scale.setScalar(1 + 0.25 * Math.sin(simT * 5));
-      for (const a of model.agents) if (a.it.ref.stage && !a.it.ref.end && live) a.shape.rotation.y += dt * 1.5;
+      for (const a of model.agents) if (!a.it.ref.end && live) a.shape.rotation.y = Math.sin(simT * 2) * 0.5;
     }
     controls.update();
     renderer.render(scene, camera);

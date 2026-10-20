@@ -53,7 +53,7 @@ export function createHistory({ cacheFile = join(HOME, 'history-index.json') } =
   let index = new Map(); // file → { mtimeMs, size, meta }
   try {
     const saved = JSON.parse(readFileSync(cacheFile, 'utf8'));
-    if (saved.v === 2) for (const e of saved.entries) index.set(e.file, e);
+    if (saved.v === 3) for (const e of saved.entries) index.set(e.file, e);
   } catch {}
   const details = new Map(); // id → { mtimeMs, size, data }
   let dirty = false;
@@ -119,7 +119,7 @@ export function createHistory({ cacheFile = join(HOME, 'history-index.json') } =
       dirty = false;
       try {
         mkdirSync(dirname(cacheFile), { recursive: true });
-        writeFileSync(cacheFile, JSON.stringify({ v: 2, entries: [...index.values()] }));
+        writeFileSync(cacheFile, JSON.stringify({ v: 3, entries: [...index.values()] }));
       } catch {}
     }
   }
