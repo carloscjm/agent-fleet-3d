@@ -1,8 +1,8 @@
 {
   "name": "agent-fleet-3d",
   "displayName": "Agent Fleet 3D",
-  "version": "0.3.0",
-  "description": "Pipeline de agentes (Tech Lead, Engenheiro, QA, DevOps) com dashboard 3D em fluxo dos projetos ativos e roteador de skills do Tech Leads Club que gasta o mínimo de tokens.",
+  "version": "0.4.0",
+  "description": "Todos os seus chats do Claude Code em 3D, pipeline de agentes (Tech Lead, Engenheiro, QA, DevOps) e roteador de skills do Tech Leads Club que gasta o mínimo de tokens.",
   "author": {
     "name": "Carlos",
     "email": "carloscjm9@gmail.com"

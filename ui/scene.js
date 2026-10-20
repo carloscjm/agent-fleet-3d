@@ -494,6 +494,7 @@ export function createScene(host, { onSelect, onFocusRow } = {}) {
   }
   let currentProject = null;
   let lastRowCount = -1;
+  let visible = true;
 
   function select(id) {
     selected = id;
@@ -584,7 +585,7 @@ export function createScene(host, { onSelect, onFocusRow } = {}) {
   let simT = 0;
   function loop() {
     requestAnimationFrame(loop);
-    if (document.hidden) return;
+    if (document.hidden || !visible) return;
     const dt = Math.min(clock.getDelta(), 0.1);
     if (!reduceMotion) simT += dt;
     const t = simT;
@@ -726,5 +727,14 @@ export function createScene(host, { onSelect, onFocusRow } = {}) {
   applyTheme();
   loop();
 
-  return { setProject, select, focusRow, setInset, recenter };
+  function setVisible(v) {
+    visible = v;
+    host.hidden = !v;
+    if (v) {
+      resize();
+      frame(lastRowCount);
+    }
+  }
+
+  return { setProject, select, focusRow, setInset, recenter, setVisible };
 }

@@ -6,7 +6,9 @@ import { createReadStream, readFileSync, existsSync, statSync, openSync, readSyn
 import { join, extname, dirname, posix, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { exec } from 'node:child_process';
-import { createState, apply, listProjects, projectDetail, startDemo } from '../shared/fleet-core.mjs';
+import { createState, apply, listProjects, projectDetail, startDemo, effectiveStatus } from '../shared/fleet-core.mjs';
+import { historyFromLive } from '../shared/history-core.mjs';
+import { createHistory } from './history.mjs';
 import { HOME, EVENTS } from '../telemetry/common.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -62,6 +64,55 @@ setInterval(readNew, 400);
 
 if (DEMO) startDemo(ingest, { speed: Number(opt('--speed', 1)) });
 
+// --- chat history (every Claude Code session on disk, plugin or not) ------
+const history = createHistory();
+if (!DEMO) setTimeout(() => history.scan(true), 50);
+const LIVE = new Set(['running', 'thinking', 'waiting', 'error', 'ready']);
+
+function liveSessions(now) {
+  const out = new Map();
+  for (const pr of state.projects.values())
+    for (const a of pr.agents.values()) {
+      if (a.kind !== 'main') continue;
+      const st = effectiveStatus(a, now);
+      out.set(a.id, { status: st, step: a.step, last: a.last, live: LIVE.has(st), projectId: pr.id });
+    }
+  return out;
+}
+
+function chatList(now = Date.now()) {
+  const live = liveSessions(now);
+  const chats = DEMO ? [] : history.list();
+  const seen = new Set();
+  for (const c of chats) {
+    seen.add(c.id);
+    const l = live.get(c.id);
+    // a transcript written in the last 2 minutes counts as active even without our hooks
+    c.live = l ? l.live : now - (c.mtime || 0) < 120000;
+    if (l) Object.assign(c, { status: l.status, step: l.step, updated: Math.max(c.updated || 0, l.last) });
+  }
+  for (const [sid, l] of live) {
+    if (seen.has(sid)) continue;
+    const d = projectDetail(state, l.projectId, now);
+    const h = d && historyFromLive(d, sid);
+    if (h) chats.push({ ...h.meta, live: l.live, status: l.status, step: l.step, source: 'hooks' });
+  }
+  return chats;
+}
+
+function chatDetail(id, now = Date.now()) {
+  const live = liveSessions(now).get(id);
+  const liveDetail = live ? projectDetail(state, live.projectId, now) : null;
+  const fromDisk = DEMO ? null : history.detail(id, now);
+  if (fromDisk) {
+    if (liveDetail?.flows.some((f) => f.sid === id && f.run)) fromDisk.pipeline = { ...liveDetail, flows: liveDetail.flows.filter((f) => f.sid === id) };
+    return { ...fromDisk, live: live?.live || false, status: live?.status || null };
+  }
+  if (!liveDetail) return null;
+  const h = historyFromLive(liveDetail, id);
+  return h ? { ...h, pipeline: { ...liveDetail, flows: liveDetail.flows.filter((f) => f.sid === id) }, live: live.live, status: live.status } : null;
+}
+
 // --- push updates -----------------------------------------------------------
 function payload(selectedAll = false) {
   const now = Date.now();
@@ -94,7 +145,12 @@ const json = (res, code, body) => {
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://localhost');
   const p = url.pathname;
-  if (p === '/api/health') return json(res, 200, { ok: true, app: 'agent-fleet-3d', version: VERSION, demo: DEMO, events: EVENTS });
+  if (p === '/api/health') return json(res, 200, { ok: true, app: 'agent-fleet-3d', version: VERSION, demo: DEMO, events: EVENTS, transcripts: history.dirs() });
+  if (p === '/api/chats') return json(res, 200, { now: Date.now(), demo: DEMO, chats: chatList(), routes: state.routes, dirs: history.dirs() });
+  if (p.startsWith('/api/chats/')) {
+    const d = chatDetail(decodeURIComponent(p.slice(11)));
+    return d ? json(res, 200, d) : json(res, 404, { error: 'not found' });
+  }
   if (p === '/api/projects') return json(res, 200, { now: Date.now(), demo: DEMO, projects: listProjects(state, Date.now(), { includeInactive: url.searchParams.has('all') }), routes: state.routes });
   if (p.startsWith('/api/projects/')) {
     const d = projectDetail(state, decodeURIComponent(p.slice(14)), Date.now());

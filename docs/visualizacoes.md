@@ -1,8 +1,10 @@
 # Propostas de visualização
 
-O dashboard mostra o pipeline como um fluxo 3D. As demais abaixo são direções para as próximas versões; todas consomem o mesmo `projectDetail()` de `shared/fleet-core.mjs`, então trocar ou somar uma visão não mexe na coleta.
+O dashboard mostra o histórico de cada chat e o pipeline como fluxos 3D. As demais abaixo são direções para as próximas versões; todas consomem o mesmo `projectDetail()` de `shared/fleet-core.mjs`, então trocar ou somar uma visão não mexe na coleta.
 
-## Implementada
+## Implementadas
+
+**Histórico do chat.** Uma esteira em serpentina por chat: cada prompt é um anel, cada ferramenta um cubo colorido pelo tipo, e cada subagente um ramal com a forma da sua etapa. Vale para qualquer chat salvo no computador, com ou sem o plugin.
 
 **Fluxo do pipeline.** Uma linha por sessão: Sessão → Tech Lead → Engenheiro → QA → DevOps → Git, ligadas por uma esteira. Cada estação tem uma forma própria (octaedro para o plano, cubo para a construção, anel para o teste, foguete para a entrega) e muda de cor com o estado. O pacote de trabalho anda pela esteira até a etapa atual, os trechos já percorridos acendem, e um caminho no chão leva a tarefa do QA de volta ao Engenheiro quando ele reprova. Atrás de cada estação, uma pilha de placas mostra os últimos passos.
 

@@ -1,6 +1,6 @@
 ---
 name: fleet
-description: Abre o dashboard 3D do Agent Fleet (lista de projetos com agentes ativos e agentes em 3D). Use quando o usuário pedir para abrir, ver ou iniciar o dashboard de agentes.
+description: Abre o dashboard 3D do Agent Fleet (todos os chats do Claude Code, histórico e pipeline em 3D). Use quando o usuário pedir para abrir, ver ou iniciar o dashboard.
 argument-hint: "[demo]"
 disable-model-invocation: true
 allowed-tools: Bash(node:*)

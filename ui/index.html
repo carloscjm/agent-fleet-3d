@@ -18,20 +18,40 @@
   </script>
 </head>
 <body>
-  <aside class="projects" aria-label="Projetos">
+  <aside class="projects" aria-label="Chats">
     <header>
-      <h1 class="brand">Agent Fleet<small>Pipeline de agentes em 3D</small></h1>
-      <input class="filter" id="filter" type="search" placeholder="Filtrar projetos" aria-label="Filtrar projetos" />
+      <h1 class="brand">Agent Fleet<small>Seus chats do Claude Code em 3D</small></h1>
+      <input class="filter" id="filter" type="search" placeholder="Buscar chats" aria-label="Buscar chats" />
+      <div class="list-tools">
+        <label>Agrupar
+          <select id="group">
+            <option value="date">Por data</option>
+            <option value="project">Por projeto</option>
+            <option value="none">Sem grupos</option>
+          </select>
+        </label>
+        <label>Mostrar
+          <select id="show">
+            <option value="all">Todos</option>
+            <option value="active">Ativos agora</option>
+            <option value="pipeline">Com pipeline</option>
+            <option value="plain">Sem pipeline</option>
+            <option value="errors">Com erros</option>
+          </select>
+        </label>
+      </div>
     </header>
-    <ul class="project-list" id="projects"></ul>
+    <div class="chat-list" id="chats"></div>
     <footer>
-      <div><span class="conn" id="conn">Conectando…</span></div>
+      <div><span class="conn" id="conn">Conectando…</span> <span id="count"></span></div>
       <div id="router-stats" style="margin-top:6px"></div>
     </footer>
   </aside>
 
   <main class="stage">
-    <div id="scene" aria-hidden="true"></div>
+    <div id="scene-history" class="scene-host" aria-hidden="true"></div>
+    <div id="scene" class="scene-host" aria-hidden="true" hidden></div>
+    <div class="overlay tip" id="tip" hidden></div>
 
     <div class="overlay title" id="title" hidden>
       <h2 id="p-name"></h2>
@@ -39,18 +59,33 @@
       <div class="chips" id="p-chips"></div>
     </div>
 
-    <button type="button" class="overlay recenter" id="recenter" hidden>Recentrar câmera</button>
-
-    <div class="overlay placeholder" id="placeholder">
-      <p>Escolha um projeto na coluna da esquerda para ver o pipeline dele em 3D.</p>
+    <div class="overlay top-actions">
+      <div class="views" role="group" aria-label="Visualização" id="views" hidden>
+        <button type="button" data-view="history" aria-pressed="true">Histórico</button>
+        <button type="button" data-view="pipeline" aria-pressed="false">Pipeline</button>
+      </div>
+      <button type="button" class="recenter" id="recenter" hidden>Recentrar câmera</button>
     </div>
 
-    <section class="overlay drawer" id="drawer" aria-label="Pipeline do projeto" hidden>
+    <div class="overlay placeholder" id="placeholder">
+      <p>Escolha um chat na coluna da esquerda para ver o histórico dele em 3D.</p>
+    </div>
+
+    <section class="overlay drawer" id="drawer" aria-label="Detalhes do chat" hidden>
       <div class="head" id="d-head"></div>
       <div class="body" id="d-body"></div>
     </section>
 
-    <div class="overlay legend" aria-hidden="true">
+    <div class="overlay legend" id="legend-history" aria-hidden="true">
+      <span><i style="background:var(--focus)"></i>Prompt</span>
+      <span><i style="background:var(--ink-3)"></i>Leitura</span>
+      <span><i style="background:var(--thinking)"></i>Edição</span>
+      <span><i style="background:var(--running)"></i>Comando</span>
+      <span><i style="background:var(--waiting)"></i>Web</span>
+      <span><i style="background:var(--ink)"></i>Subagente</span>
+      <span><i style="background:var(--error)"></i>Erro</span>
+    </div>
+    <div class="overlay legend" id="legend-pipeline" aria-hidden="true" hidden>
       <span><i style="background:var(--idle)"></i>Aguardando</span>
       <span><i style="background:var(--running)"></i>Em andamento</span>
       <span><i style="background:var(--thinking)"></i>Concluído</span>

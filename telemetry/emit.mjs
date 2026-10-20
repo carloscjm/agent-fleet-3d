@@ -1,66 +1,12 @@
 #!/usr/bin/env node
 // Hook handler for agent activity. Runs async (non-blocking) and appends one compact event per hook.
-import { basename, resolve } from 'node:path';
+import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readStdin, appendEvent, projectOf, loadSessions, saveSessions } from './common.mjs';
 import { stageOf, verdictOf } from '../shared/fleet-core.mjs';
+import { clip, summarize, skillOf } from '../shared/steps.mjs';
 
-const clip = (s, n = 70) => {
-  s = String(s ?? '').replace(/\s+/g, ' ').trim();
-  return s.length > n ? s.slice(0, n - 1) + '…' : s;
-};
-
-export function summarize(tool, input = {}) {
-  if (!tool) return '';
-  if (tool.startsWith('mcp__')) {
-    const [, server, name] = tool.split('__');
-    return `${name || tool} (${server})`;
-  }
-  switch (tool) {
-    case 'Bash':
-      return clip(input.description || input.command);
-    case 'Read':
-    case 'Write':
-    case 'Edit':
-    case 'MultiEdit':
-    case 'NotebookEdit': {
-      const f = input.file_path || input.notebook_path || '';
-      const sk = f.match(/([^/\\]+)[/\\]SKILL\.md$/);
-      return sk && tool === 'Read' ? `Lendo skill ${sk[1]}` : `${tool} ${basename(f)}`;
-    }
-    case 'Grep':
-      return `Grep "${clip(input.pattern, 40)}"`;
-    case 'Glob':
-      return `Glob ${clip(input.pattern, 40)}`;
-    case 'WebSearch':
-      return `Busca "${clip(input.query, 50)}"`;
-    case 'WebFetch':
-      try {
-        return `Fetch ${new URL(input.url).host}`;
-      } catch {
-        return 'Fetch';
-      }
-    case 'Task':
-    case 'Agent':
-      return `Delegando: ${clip(input.description || input.prompt, 50)}`;
-    case 'Skill':
-      return `Skill ${input.skill || input.name || ''}`;
-    case 'TodoWrite':
-    case 'TaskCreate':
-    case 'TaskUpdate':
-      return 'Atualizando tarefas';
-    default:
-      return tool;
-  }
-}
-
-/** Detects skill usage from tool calls (Skill tool or reading a SKILL.md). */
-export function skillOf(tool, input = {}) {
-  if (tool === 'Skill') return input.skill || input.name || null;
-  const p = input.file_path || '';
-  const m = p.match(/([^/\\]+)[/\\]SKILL\.md$/);
-  return tool === 'Read' && m ? m[1] : null;
-}
+export { summarize, skillOf };
 
 export function toEvent(h) {
   const e = h.hook_event_name;

@@ -157,7 +157,7 @@ button { font: inherit; color: inherit; }
 
 /* ---------- stage ---------- */
 .stage { position: relative; min-width: 0; min-height: 0; }
-#scene { position: absolute; inset: 0; }
+#scene, .scene-host { position: absolute; inset: 0; }
 #scene canvas { display: block; }
 .overlay { position: absolute; pointer-events: none; }
 .overlay > * { pointer-events: auto; }
@@ -244,7 +244,7 @@ button { font: inherit; color: inherit; }
 }
 
 [hidden] { display: none !important; }
-#scene { z-index: 0; isolation: isolate; }
+#scene, .scene-host { z-index: 0; isolation: isolate; }
 .overlay { z-index: 2; }
 
 /* ---------- pipeline bar (project list + drawer) ---------- */
@@ -296,8 +296,11 @@ button { font: inherit; color: inherit; }
 .fcard.rework.hot { border-top-color: var(--error); }
 .fcard.sel { border-color: var(--ink); }
 
+.top-actions { top: 20px; right: 24px; display: flex; gap: 8px; align-items: center; }
+.views { display: flex; border: 1px solid var(--line-strong); border-radius: 8px; overflow: hidden; background: color-mix(in srgb, var(--panel) 85%, transparent); }
+.views button { background: none; border: 0; padding: 7px 14px; cursor: pointer; color: var(--ink-2); }
+.views button[aria-pressed='true'] { background: var(--panel-2); color: var(--ink); font-weight: 600; }
 .recenter {
-  top: 20px; right: 24px;
   background: color-mix(in srgb, var(--panel) 85%, transparent);
   border: 1px solid var(--line-strong); border-radius: 8px;
   padding: 7px 14px; cursor: pointer; color: var(--ink-2);
@@ -330,6 +333,82 @@ button { font: inherit; color: inherit; }
 .stage-btn .s.fail { color: var(--error); }
 .stage-btn .s.pass { color: var(--thinking); }
 
+/* ---------- chat list ---------- */
+.list-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+.list-tools label { display: grid; gap: 3px; font-size: 12px; color: var(--ink-3); }
+.list-tools select {
+  font: inherit; font-size: 13.5px; color: var(--ink); background: var(--sky-deep);
+  border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; min-width: 0;
+}
+.chat-list { overflow-y: auto; flex: 1; padding: 2px 10px 16px; }
+.group { margin-top: 6px; }
+.group-h {
+  width: 100%; display: flex; align-items: center; gap: 6px; background: none; border: 0; cursor: pointer;
+  padding: 8px 6px 4px; color: var(--ink-3); font-size: 12.5px; font-weight: 600; text-align: left;
+  position: sticky; top: 0; background: var(--panel); z-index: 1;
+}
+.group-h .chev { width: 12px; font-size: 11px; }
+.group-h .gname { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink-2); }
+.group-h .gcount { font-weight: 500; font-variant-numeric: tabular-nums; }
+.chat-ul { list-style: none; margin: 0; padding: 0; }
+.chat {
+  width: 100%; text-align: left; background: none; border: 0; border-radius: 8px; cursor: pointer;
+  padding: 8px 10px 8px 12px; display: grid; gap: 3px; position: relative;
+}
+.chat > *, .chat .row > *, .cmeta > * { min-width: 0; }
+.chat .row .name { flex: 1; }
+.chat:hover { background: color-mix(in srgb, var(--panel-2) 70%, transparent); }
+.chat[aria-current='true'] { background: var(--panel-2); }
+.chat[aria-current='true']::before { content: ''; position: absolute; left: 0; top: 9px; bottom: 9px; width: 3px; border-radius: 2px; background: var(--focus); }
+.chat .row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.chat .name { font: 500 14.5px/1.25 var(--font-ui); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chat .when { font-size: 12px; color: var(--ink-3); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.cmeta { display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--ink-3); min-width: 0; }
+.cmeta .proj { color: var(--ink-2); }
+.cmeta .branch { font-family: var(--font-code); font-size: 11.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cmeta .counts { margin-left: auto; white-space: nowrap; }
+.chat .step { font: 12px/1.35 var(--font-code); color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chat .pipe { margin-top: 1px; }
+.chat .pipe .seg span { font-size: 10.5px; }
+
+/* ---------- history drawer ---------- */
+.skills { font-size: 12px; color: var(--ink-3); }
+.turns { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.turn-btn {
+  width: 100%; text-align: left; background: none; border: 0; border-radius: 7px; cursor: pointer;
+  padding: 7px 8px; display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 1px 8px; align-items: baseline;
+}
+.turn-btn:hover { background: var(--panel-2); }
+.turn-btn.on { background: var(--panel-2); }
+.turn-btn .tn { grid-row: span 2; font: 600 12.5px var(--font-code); color: var(--focus); text-align: right; font-variant-numeric: tabular-nums; }
+.turn-btn .tp { font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.turn-btn.on .tp { white-space: normal; font-weight: 600; }
+.turn-btn .tm { font-size: 11.5px; color: var(--ink-3); }
+.turn-detail { margin: 2px 4px 10px 34px; }
+.turn-detail .full-prompt { margin: 4px 0 6px; font-size: 13px; color: var(--ink-2); white-space: pre-wrap; overflow-wrap: anywhere; }
+.turn-detail .reply { margin: 2px 0 6px; font-size: 13px; color: var(--ink-2); overflow-wrap: anywhere; }
+.turn-detail .timeline { padding: 0 2px; }
+.agent-row { display: grid; grid-template-columns: 12px minmax(0, 1fr); gap: 1px 10px; align-items: center; padding: 4px 2px; }
+.agent-row .dot { grid-column: 1; grid-row: 1 / span 4; align-self: start; margin-top: 5px; }
+.agent-row > :not(.dot) { grid-column: 2; }
+.agent-row .n { font-weight: 600; font-size: 13.5px; }
+.agent-row .s { font: 12px var(--font-code); color: var(--ink-2); overflow-wrap: anywhere; }
+.agent-row .s.fail { color: var(--error); }
+.agent-row .s.pass { color: var(--thinking); }
+.agent-row .m { font-size: 11.5px; color: var(--ink-3); }
+.flow-head.static { cursor: default; }
+.fcard.hist { max-width: 240px; white-space: normal; text-align: left; }
+.fcard.hist .t { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+
+/* ---------- hover tooltip ---------- */
+.tip {
+  max-width: 270px; pointer-events: none !important; z-index: 5;
+  background: color-mix(in srgb, var(--panel) 96%, transparent); border: 1px solid var(--line-strong);
+  border-radius: 7px; padding: 6px 9px; display: grid; gap: 2px; font-size: 12px; color: var(--ink-2);
+}
+.tip b { font: 600 12.5px/1.3 var(--font-code); color: var(--ink); overflow-wrap: anywhere; }
+.tip .err { color: var(--error); }
+
 </style>
   <script type="importmap">
     {
@@ -341,20 +420,40 @@ button { font: inherit; color: inherit; }
   </script>
 </head>
 <body>
-  <aside class="projects" aria-label="Projetos">
+  <aside class="projects" aria-label="Chats">
     <header>
-      <h1 class="brand">Agent Fleet<small>Pipeline de agentes em 3D</small></h1>
-      <input class="filter" id="filter" type="search" placeholder="Filtrar projetos" aria-label="Filtrar projetos" />
+      <h1 class="brand">Agent Fleet<small>Seus chats do Claude Code em 3D</small></h1>
+      <input class="filter" id="filter" type="search" placeholder="Buscar chats" aria-label="Buscar chats" />
+      <div class="list-tools">
+        <label>Agrupar
+          <select id="group">
+            <option value="date">Por data</option>
+            <option value="project">Por projeto</option>
+            <option value="none">Sem grupos</option>
+          </select>
+        </label>
+        <label>Mostrar
+          <select id="show">
+            <option value="all">Todos</option>
+            <option value="active">Ativos agora</option>
+            <option value="pipeline">Com pipeline</option>
+            <option value="plain">Sem pipeline</option>
+            <option value="errors">Com erros</option>
+          </select>
+        </label>
+      </div>
     </header>
-    <ul class="project-list" id="projects"></ul>
+    <div class="chat-list" id="chats"></div>
     <footer>
-      <div><span class="conn" id="conn">Conectando…</span></div>
+      <div><span class="conn" id="conn">Conectando…</span> <span id="count"></span></div>
       <div id="router-stats" style="margin-top:6px"></div>
     </footer>
   </aside>
 
   <main class="stage">
-    <div id="scene" aria-hidden="true"></div>
+    <div id="scene-history" class="scene-host" aria-hidden="true"></div>
+    <div id="scene" class="scene-host" aria-hidden="true" hidden></div>
+    <div class="overlay tip" id="tip" hidden></div>
 
     <div class="overlay title" id="title" hidden>
       <h2 id="p-name"></h2>
@@ -362,18 +461,33 @@ button { font: inherit; color: inherit; }
       <div class="chips" id="p-chips"></div>
     </div>
 
-    <button type="button" class="overlay recenter" id="recenter" hidden>Recentrar câmera</button>
-
-    <div class="overlay placeholder" id="placeholder">
-      <p>Escolha um projeto na coluna da esquerda para ver o pipeline dele em 3D.</p>
+    <div class="overlay top-actions">
+      <div class="views" role="group" aria-label="Visualização" id="views" hidden>
+        <button type="button" data-view="history" aria-pressed="true">Histórico</button>
+        <button type="button" data-view="pipeline" aria-pressed="false">Pipeline</button>
+      </div>
+      <button type="button" class="recenter" id="recenter" hidden>Recentrar câmera</button>
     </div>
 
-    <section class="overlay drawer" id="drawer" aria-label="Pipeline do projeto" hidden>
+    <div class="overlay placeholder" id="placeholder">
+      <p>Escolha um chat na coluna da esquerda para ver o histórico dele em 3D.</p>
+    </div>
+
+    <section class="overlay drawer" id="drawer" aria-label="Detalhes do chat" hidden>
       <div class="head" id="d-head"></div>
       <div class="body" id="d-body"></div>
     </section>
 
-    <div class="overlay legend" aria-hidden="true">
+    <div class="overlay legend" id="legend-history" aria-hidden="true">
+      <span><i style="background:var(--focus)"></i>Prompt</span>
+      <span><i style="background:var(--ink-3)"></i>Leitura</span>
+      <span><i style="background:var(--thinking)"></i>Edição</span>
+      <span><i style="background:var(--running)"></i>Comando</span>
+      <span><i style="background:var(--waiting)"></i>Web</span>
+      <span><i style="background:var(--ink)"></i>Subagente</span>
+      <span><i style="background:var(--error)"></i>Erro</span>
+    </div>
+    <div class="overlay legend" id="legend-pipeline" aria-hidden="true" hidden>
       <span><i style="background:var(--idle)"></i>Aguardando</span>
       <span><i style="background:var(--running)"></i>Em andamento</span>
       <span><i style="background:var(--thinking)"></i>Concluído</span>
@@ -386,6 +500,82 @@ button { font: inherit; color: inherit; }
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+const { clip, summarize, skillOf, category } = (() => {
+// Isomorphic helpers that turn a tool call into a short, readable step (used by hooks and the history reader).
+const clip = (s, n = 70) => {
+  s = String(s ?? '').replace(/\s+/g, ' ').trim();
+  return s.length > n ? s.slice(0, n - 1) + '…' : s;
+};
+
+const base = (p) => String(p || '').split(/[/\\]/).pop();
+
+function summarize(tool, input = {}) {
+  if (!tool) return '';
+  input = input || {};
+  if (tool.startsWith('mcp__')) {
+    const [, server, name] = tool.split('__');
+    return `${name || tool} (${server})`;
+  }
+  switch (tool) {
+    case 'Bash':
+    case 'PowerShell':
+      return clip(input.description || input.command);
+    case 'Read':
+    case 'Write':
+    case 'Edit':
+    case 'MultiEdit':
+    case 'NotebookEdit': {
+      const f = input.file_path || input.notebook_path || '';
+      const sk = f.match(/([^/\\]+)[/\\]SKILL\.md$/);
+      return sk && tool === 'Read' ? `Lendo skill ${sk[1]}` : `${tool} ${base(f)}`;
+    }
+    case 'Grep':
+      return `Grep "${clip(input.pattern, 40)}"`;
+    case 'Glob':
+      return `Glob ${clip(input.pattern, 40)}`;
+    case 'WebSearch':
+      return `Busca "${clip(input.query, 50)}"`;
+    case 'WebFetch':
+      try {
+        return `Fetch ${new URL(input.url).host}`;
+      } catch {
+        return 'Fetch';
+      }
+    case 'Task':
+    case 'Agent':
+      return `Delegando: ${clip(input.description || input.prompt, 50)}`;
+    case 'Skill':
+      return `Skill ${input.skill || input.name || ''}`;
+    case 'TodoWrite':
+    case 'TaskCreate':
+    case 'TaskUpdate':
+      return 'Atualizando tarefas';
+    default:
+      return tool;
+  }
+}
+
+/** Detects skill usage from tool calls (Skill tool or reading a SKILL.md). */
+function skillOf(tool, input = {}) {
+  input = input || {};
+  if (tool === 'Skill') return input.skill || input.name || null;
+  const p = input.file_path || '';
+  const m = p.match(/([^/\\]+)[/\\]SKILL\.md$/);
+  return tool === 'Read' && m ? m[1] : null;
+}
+
+function category(tool = '') {
+  if (/^(Read|Grep|Glob|LS)$/.test(tool)) return 'read';
+  if (/^(Edit|Write|MultiEdit|NotebookEdit)$/.test(tool)) return 'edit';
+  if (tool === 'Bash' || tool === 'PowerShell') return 'exec';
+  if (/^Web/.test(tool)) return 'web';
+  if (tool === 'Agent' || tool === 'Task') return 'delegate';
+  if (tool.startsWith('mcp__')) return 'mcp';
+  return 'other';
+}
+
+return { clip, summarize, skillOf, category };
+})();
 const { ACTIVE_WINDOW_MS, STALE_MS, SUB_LINGER_MS, STAGES, stageOf, verdictOf, createState, apply, effectiveStatus, listProjects, projectDetail, startDemo } = (() => {
 // Isomorphic state reducer for agent telemetry events (runs in Node and in the browser).
 const ACTIVE_WINDOW_MS = 60 * 60 * 1000; // project stays listed for 1h after last activity
@@ -712,10 +902,10 @@ function projectDetail(state, id, now = Date.now()) {
 // ---------------------------------------------------------------------------
 // Demo generator: sessions running the delivery pipeline, same event shape as the hooks.
 const DEMO_PROJECTS = [
-  { id: 'demo-checkout', name: 'checkout-api', root: '~/code/checkout-api', tasks: ['Retry com idempotência no pagamento', 'Webhook de estorno', 'Limite de tentativas por cartão'] },
-  { id: 'demo-mobile', name: 'mobile-app', root: '~/code/mobile-app', tasks: ['Tela de onboarding com biometria', 'Cache offline do carrinho'] },
-  { id: 'demo-data', name: 'data-pipeline', root: '~/code/data-pipeline', tasks: ['Deduplicar eventos de pedido', 'Particionar tabela de vendas'] },
-  { id: 'demo-site', name: 'landing-site', root: '~/code/landing-site', tasks: ['Melhorar LCP da home', 'Formulário de contato acessível'] },
+  { id: 'demo-checkout', name: 'checkout-api', root: 'C:\\Users\\carlos\\code\\checkout-api', tasks: ['Retry com idempotência no pagamento', 'Webhook de estorno', 'Limite de tentativas por cartão'] },
+  { id: 'demo-mobile', name: 'mobile-app', root: 'C:\\Users\\carlos\\code\\mobile-app', tasks: ['Tela de onboarding com biometria', 'Cache offline do carrinho'] },
+  { id: 'demo-data', name: 'data-pipeline', root: 'C:\\Users\\carlos\\code\\data-pipeline', tasks: ['Deduplicar eventos de pedido', 'Particionar tabela de vendas'] },
+  { id: 'demo-site', name: 'landing-site', root: 'C:\\Users\\carlos\\code\\landing-site', tasks: ['Melhorar LCP da home', 'Formulário de contato acessível'] },
 ];
 const STAGE_TOOLS = {
   plan: [
@@ -858,6 +1048,527 @@ function startDemo(emit, { speed = 1, rand = Math.random } = {}) {
 }
 
 return { ACTIVE_WINDOW_MS, STALE_MS, SUB_LINGER_MS, STAGES, stageOf, verdictOf, createState, apply, effectiveStatus, listProjects, projectDetail, startDemo };
+})();
+const { MAX_TOOLS_PER_HISTORY, hashId, promptText, parseTranscript, toEvents, pipelineOf, historyFromLive, dateGroup, filterChats, groupChats } = (() => {
+// Isomorphic reader for Claude Code session transcripts (~/.claude/projects/<proj>/<session>.jsonl).
+// Turns a transcript into: meta (for the chat list), turns (for the 3D history) and hook-shaped
+// events (fed to the fleet reducer to rebuild the pipeline view of sessions that never ran our hooks).
+
+
+
+const MAX_TOOLS_PER_HISTORY = 1500;
+
+const ts = (s) => {
+  const n = typeof s === 'number' ? s : Date.parse(s);
+  return Number.isFinite(n) ? n : null;
+};
+
+function hashId(s) {
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
+  return h.toString(16).padStart(8, '0');
+}
+
+function textOf(content) {
+  if (typeof content === 'string') return content;
+  if (!Array.isArray(content)) return '';
+  return content
+    .filter((b) => b && b.type === 'text' && typeof b.text === 'string')
+    .map((b) => b.text)
+    .join('\n');
+}
+
+// Removes harness wrappers and returns the human-visible prompt, or null when the line is not a prompt.
+function promptText(line) {
+  if (line.type !== 'user' || line.isMeta || line.isSidechain) return null;
+  const c = line.message?.content;
+  if (Array.isArray(c) && c.some((b) => b && b.type === 'tool_result')) return null;
+  if (line.origin && line.origin.kind && line.origin.kind !== 'human') return null;
+  let t = textOf(c);
+  if (!t) return null;
+  t = t.replace(/<system-reminder>[\s\S]*?<\/system-reminder>/g, ' ');
+  const cmd = t.match(/<command-name>\s*([^<]+?)\s*<\/command-name>/);
+  if (cmd) {
+    const args = (t.match(/<command-args>([\s\S]*?)<\/command-args>/) || [])[1] || '';
+    t = `${cmd[1].startsWith('/') ? cmd[1] : '/' + cmd[1]} ${args}`;
+  }
+  if (/^\s*<(local-command-stdout|local-command-stderr|bash-stdout|bash-stderr)/.test(t)) return null;
+  if (/^\s*Caveat: The messages below were generated/.test(t)) return null;
+  t = t.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  return t || null;
+}
+
+function resultText(block) {
+  const c = block.content;
+  if (typeof c === 'string') return c;
+  if (Array.isArray(c)) return c.map((x) => (typeof x === 'string' ? x : x?.text || '')).join('\n');
+  return '';
+}
+
+function parseSubagent(lines) {
+  let prompt = null;
+  const tools = [];
+  const byId = new Map();
+  for (const l of lines) {
+    if (!l || typeof l !== 'object') continue;
+    const t = ts(l.timestamp);
+    if (l.type === 'user' && prompt === null) {
+      const c = l.message?.content;
+      if (!(Array.isArray(c) && c.some((b) => b?.type === 'tool_result'))) prompt = textOf(c).trim();
+    }
+    if (l.type === 'assistant' && Array.isArray(l.message?.content)) {
+      for (const b of l.message.content) {
+        if (b?.type !== 'tool_use') continue;
+        const tool = { id: b.id, name: b.name, step: summarize(b.name, b.input), cat: category(b.name), t, skill: skillOf(b.name, b.input) };
+        tools.push(tool);
+        byId.set(b.id, tool);
+      }
+    }
+    if (l.type === 'user' && Array.isArray(l.message?.content)) {
+      for (const b of l.message.content) {
+        if (b?.type !== 'tool_result') continue;
+        const tool = byId.get(b.tool_use_id);
+        if (tool) {
+          tool.end = t;
+          if (b.is_error) tool.err = clip(resultText(b), 90) || 'erro';
+        }
+      }
+    }
+  }
+  return { prompt: prompt || '', tools };
+}
+
+/**
+ * @param lines   parsed JSONL objects of the main session file
+ * @param options { subagents: Array<lines[]>, project: {id,name,root} }
+ */
+function parseTranscript(lines, options = {}) {
+  const meta = {
+    id: null,
+    cwd: null,
+    branch: null,
+    entrypoint: null,
+    created: null,
+    updated: null,
+    title: null,
+    aiTitle: null,
+    firstPrompt: null,
+    lastPrompt: null,
+    cost: null,
+    prompts: 0,
+    tools: 0,
+    agents: 0,
+    errors: 0,
+    pipeline: false,
+    stages: [],
+    skills: [],
+  };
+  const turns = [];
+  const toolById = new Map();
+  let turn = null;
+  const skills = new Set();
+  const newTurn = (t, prompt) => {
+    turn = { n: turns.length, t, prompt, tools: [], agents: [], items: [], reply: null, end: t };
+    turns.push(turn);
+    return turn;
+  };
+
+  for (const l of lines) {
+    if (!l || typeof l !== 'object') continue;
+    if (l.sessionId && !meta.id) meta.id = l.sessionId;
+    if (l.type === 'custom-title' && l.customTitle) meta.title = l.customTitle;
+    if (l.type === 'ai-title' && l.aiTitle) meta.aiTitle = l.aiTitle;
+    if (l.type === 'summary' && l.summary && !meta.aiTitle) meta.aiTitle = l.summary;
+    if (l.type === 'cost-state' && typeof l.totalCostUSD === 'number') meta.cost = l.totalCostUSD;
+    if (l.isSidechain) continue; // older versions keep subagent lines inline; their outcome is read from the main chain
+    const t = ts(l.timestamp);
+    if (t) {
+      if (!meta.created || t < meta.created) meta.created = t;
+      if (!meta.updated || t > meta.updated) meta.updated = t;
+    }
+    if (l.cwd && !meta.cwd) meta.cwd = l.cwd;
+    if (l.gitBranch && l.gitBranch !== 'HEAD') meta.branch = l.gitBranch;
+    if (l.entrypoint && !meta.entrypoint) meta.entrypoint = l.entrypoint;
+
+    const p = promptText(l);
+    if (p) {
+      newTurn(t, clip(p, 400));
+      meta.prompts++;
+      if (!meta.firstPrompt) meta.firstPrompt = clip(p, 120);
+      meta.lastPrompt = clip(p, 120);
+      continue;
+    }
+    if (l.type === 'assistant' && Array.isArray(l.message?.content)) {
+      if (!turn) newTurn(t, null);
+      for (const b of l.message.content) {
+        if (!b) continue;
+        if (b.type === 'text' && b.text?.trim()) turn.reply = clip(b.text, 400);
+        if (b.type !== 'tool_use') continue;
+        const input = b.input || {};
+        if (b.name === 'Agent' || b.name === 'Task') {
+          const type = input.subagent_type || 'general-purpose';
+          const stage = stageOf(type);
+          const agent = { id: b.id, type, stage, desc: clip(input.description || input.prompt, 80), prompt: String(input.prompt || ''), t, end: null, err: null, result: null, verdict: null, tools: [] };
+          turn.agents.push(agent);
+          turn.items.push({ kind: 'agent', ref: agent });
+          toolById.set(b.id, agent);
+          meta.agents++;
+          if (stage) {
+            meta.pipeline = true;
+            if (!meta.stages.includes(stage)) meta.stages.push(stage);
+          }
+        } else {
+          const tool = { id: b.id, name: b.name, step: summarize(b.name, input), cat: category(b.name), t, end: null, err: null, skill: skillOf(b.name, input) };
+          if (tool.skill) skills.add(tool.skill);
+          turn.tools.push(tool);
+          turn.items.push({ kind: 'tool', ref: tool });
+          toolById.set(b.id, tool);
+          meta.tools++;
+        }
+      }
+      if (t) turn.end = Math.max(turn.end || 0, t);
+    }
+    if (l.type === 'user' && Array.isArray(l.message?.content)) {
+      for (const b of l.message.content) {
+        if (b?.type !== 'tool_result') continue;
+        const ref = toolById.get(b.tool_use_id);
+        if (!ref) continue;
+        ref.end = t;
+        if (ref.prompt !== undefined) {
+          const txt = resultText(b);
+          ref.result = clip(txt.trim().split('\n').slice(-3).join(' '), 240);
+          if (ref.stage === 'test') ref.verdict = verdictOf(txt);
+        }
+        if (b.is_error) {
+          ref.err = clip(resultText(b), 90) || 'erro';
+          meta.errors++;
+        }
+        if (turn && t) turn.end = Math.max(turn.end || 0, t);
+      }
+    }
+  }
+
+  // Attach subagent transcripts (newer versions store them in <session>/subagents/*.jsonl).
+  const allAgents = turns.flatMap((x) => x.agents);
+  for (const subLines of options.subagents || []) {
+    const sub = parseSubagent(subLines);
+    const key = sub.prompt.slice(0, 160);
+    const a = allAgents.find((x) => !x.tools.length && x.prompt && (x.prompt.trim().slice(0, 160) === key || (key && x.prompt.includes(key.slice(0, 80)))));
+    if (a) {
+      a.tools = sub.tools;
+      for (const tl of sub.tools) if (tl.skill) skills.add(tl.skill);
+    }
+  }
+  meta.skills = [...skills];
+  meta.title = meta.title || meta.aiTitle || meta.firstPrompt || 'Chat sem título';
+  const project = options.project || { id: hashId(meta.cwd || meta.id || 'x'), name: (meta.cwd || '').split(/[/\\]/).filter(Boolean).pop() || 'sem pasta', root: meta.cwd || '' };
+  meta.project = project;
+  return { meta, turns, events: toEvents(meta, turns, project) };
+}
+
+/** Rebuilds the hook event stream so the fleet reducer can show the pipeline of any session. */
+function toEvents(meta, turns, proj) {
+  const sid = meta.id || 'session';
+  const out = [];
+  const T = (t) => t || meta.updated || meta.created || 0;
+  out.push({ t: T(meta.created), e: 'SessionStart', sid, proj, source: 'startup' });
+  for (const turn of turns) {
+    if (turn.prompt) out.push({ t: T(turn.t), e: 'UserPromptSubmit', sid, proj, step: `Prompt: ${clip(turn.prompt, 60)}` });
+    for (const it of turn.items) {
+      const r = it.ref;
+      if (it.kind === 'tool') {
+        out.push({ t: T(r.t), e: 'PreToolUse', sid, proj, tool: r.name, tuid: r.id, step: r.step, skill: r.skill || undefined });
+        if (r.end) out.push({ t: T(r.end), e: r.err ? 'PostToolUseFailure' : 'PostToolUse', sid, proj, tool: r.name, tuid: r.id, err: r.err || undefined });
+      } else {
+        out.push({ t: T(r.t), e: 'PreToolUse', sid, proj, tool: 'Agent', tuid: r.id, step: `Delegando: ${r.desc}`, delegate: { type: r.type, desc: r.desc } });
+        out.push({ t: T(r.t), e: 'SubagentStart', sid, proj, aid: r.id, at: r.type });
+        for (const tl of r.tools) {
+          out.push({ t: T(tl.t), e: 'PreToolUse', sid, proj, aid: r.id, at: r.type, tool: tl.name, tuid: tl.id, step: tl.step, skill: tl.skill || undefined });
+          if (tl.end) out.push({ t: T(tl.end), e: tl.err ? 'PostToolUseFailure' : 'PostToolUse', sid, proj, aid: r.id, at: r.type, tool: tl.name, tuid: tl.id, err: tl.err || undefined });
+        }
+        if (r.end) {
+          out.push({ t: T(r.end), e: 'SubagentStop', sid, proj, aid: r.id, at: r.type, msg: r.result || '', verdict: r.verdict || undefined });
+          out.push({ t: T(r.end), e: r.err ? 'PostToolUseFailure' : 'PostToolUse', sid, proj, tool: 'Agent', tuid: r.id });
+        }
+      }
+    }
+  }
+  return out.sort((a, b) => a.t - b.t);
+}
+
+/** Pipeline view (same shape as projectDetail) for one session, rebuilt from its events. */
+function pipelineOf(events, sid, now) {
+  const st = createState();
+  for (const ev of events) apply(st, ev);
+  const pid = events[0]?.proj?.id;
+  const d = pid ? projectDetail(st, pid, now) : null;
+  if (!d) return null;
+  // History is not "live": keep finished stages finished even when old.
+  d.flows = d.flows.filter((f) => f.sid === sid).map((f) => ({ ...f, label: 'Orquestrador' }));
+  return d;
+}
+
+/** History built from live reducer data, for sessions that only exist as hook events (demo, other dirs). */
+function historyFromLive(detail, sid) {
+  const main = detail.agents.find((a) => a.id === sid);
+  if (!main) return null;
+  const turns = [];
+  let turn = null;
+  const newTurn = (t, prompt) => {
+    turn = { n: turns.length, t, prompt, tools: [], agents: [], items: [], reply: null, end: t };
+    turns.push(turn);
+  };
+  for (const s of main.steps) {
+    if (s.tool === 'Prompt') {
+      newTurn(s.t, s.step.replace(/^Prompt:\s*/, ''));
+      continue;
+    }
+    if (s.tool === 'Router' || s.tool === 'Agent') continue;
+    if (!turn) newTurn(s.t, null);
+    const tool = { id: s.id || `${s.t}`, name: s.tool, step: s.step, cat: category(s.tool), t: s.t, end: s.dur != null ? s.t + s.dur : null, err: s.err || null };
+    turn.tools.push(tool);
+    turn.items.push({ kind: 'tool', ref: tool });
+  }
+  const subs = detail.agents.filter((a) => a.parent === sid).sort((a, b) => a.started - b.started);
+  for (const a of subs) {
+    const target = [...turns].reverse().find((x) => (x.t || 0) <= a.started) || turns[turns.length - 1];
+    if (!target) continue;
+    const agent = {
+      id: a.id,
+      type: a.type,
+      stage: a.stage,
+      desc: a.task || a.label,
+      t: a.started,
+      end: a.ended,
+      err: null,
+      result: a.result,
+      verdict: a.verdict,
+      live: a.status !== 'done' && a.status !== 'ended',
+      tools: a.steps.map((s) => ({ id: s.id, name: s.tool, step: s.step, cat: category(s.tool), t: s.t, err: s.err || null })),
+    };
+    target.agents.push(agent);
+    // insert by time among items
+    const idx = target.items.findIndex((it) => (it.ref.t || 0) > a.started);
+    target.items.splice(idx < 0 ? target.items.length : idx, 0, { kind: 'agent', ref: agent });
+  }
+  const tools = turns.reduce((n, x) => n + x.tools.length, 0);
+  const stages = [...new Set(subs.map((a) => a.stage).filter(Boolean))];
+  const meta = {
+    id: sid,
+    cwd: detail.root,
+    branch: null,
+    entrypoint: 'live',
+    created: main.started,
+    updated: main.last,
+    title: null,
+    firstPrompt: turns.find((x) => x.prompt)?.prompt || null,
+    lastPrompt: [...turns].reverse().find((x) => x.prompt)?.prompt || null,
+    cost: null,
+    prompts: turns.filter((x) => x.prompt).length,
+    tools,
+    agents: subs.length,
+    errors: main.errors,
+    pipeline: stages.length > 0,
+    stages,
+    skills: main.skill ? [main.skill] : [],
+    project: { id: detail.id, name: detail.name, root: detail.root },
+  };
+  const flow = detail.flows.find((f) => f.sid === sid);
+  meta.title = flow?.run?.task || meta.firstPrompt || main.label;
+  return { meta, turns };
+}
+
+// ---------------------------------------------------------------------------
+// Chat list: filter and grouping (used by the UI, kept here so it is testable).
+const DAY = 86400000;
+function dateGroup(t, now = Date.now()) {
+  const d0 = new Date(now);
+  d0.setHours(0, 0, 0, 0);
+  const start = d0.getTime();
+  if (t >= start) return { key: '0', label: 'Hoje' };
+  if (t >= start - DAY) return { key: '1', label: 'Ontem' };
+  if (t >= start - 7 * DAY) return { key: '2', label: 'Últimos 7 dias' };
+  if (t >= start - 30 * DAY) return { key: '3', label: 'Últimos 30 dias' };
+  const d = new Date(t);
+  const label = d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  return { key: `4-${String(9999 - d.getFullYear()).padStart(4, '0')}-${String(12 - d.getMonth()).padStart(2, '0')}`, label: label.charAt(0).toUpperCase() + label.slice(1) };
+}
+
+function filterChats(chats, { q = '', show = 'all' } = {}) {
+  const words = q.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').split(/\s+/).filter(Boolean);
+  return chats.filter((c) => {
+    if (show === 'active' && !c.live) return false;
+    if (show === 'pipeline' && !c.pipeline) return false;
+    if (show === 'plain' && c.pipeline) return false;
+    if (show === 'errors' && !c.errors) return false;
+    if (!words.length) return true;
+    const hay = [c.title, c.project?.name, c.project?.root, c.branch, c.lastPrompt, c.firstPrompt, ...(c.skills || [])]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '');
+    return words.every((w) => hay.includes(w));
+  });
+}
+
+function groupChats(chats, by = 'date', now = Date.now()) {
+  const groups = new Map();
+  const sorted = [...chats].sort((a, b) => (b.updated || 0) - (a.updated || 0));
+  for (const c of sorted) {
+    let g;
+    if (by === 'project') g = { key: c.project?.root || c.project?.name || '-', label: c.project?.name || 'Sem pasta', sub: c.project?.root || '' };
+    else if (by === 'none') g = { key: 'all', label: 'Todos os chats' };
+    else g = dateGroup(c.updated || c.created || 0, now);
+    if (!groups.has(g.key)) groups.set(g.key, { ...g, chats: [] });
+    groups.get(g.key).chats.push(c);
+  }
+  const out = [...groups.values()];
+  if (by === 'date') out.sort((a, b) => a.key.localeCompare(b.key));
+  else out.sort((a, b) => (b.chats[0].updated || 0) - (a.chats[0].updated || 0));
+  return out;
+}
+
+
+return { MAX_TOOLS_PER_HISTORY, hashId, promptText, parseTranscript, toEvents, pipelineOf, historyFromLive, dateGroup, filterChats, groupChats };
+})();
+const { demoTranscripts } = (() => {
+// Demo chat history: realistic transcripts in the same JSONL shape Claude Code writes,
+// so the demo exercises the real parser. Deterministic (seeded) for stable screenshots.
+function rng(seed) {
+  return () => {
+    seed |= 0;
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const PROJECTS = [
+  { name: 'checkout-api', root: 'C:\\Users\\carlos\\code\\checkout-api', branch: 'main' },
+  { name: 'mobile-app', root: 'C:\\Users\\carlos\\code\\mobile-app', branch: 'develop' },
+  { name: 'data-pipeline', root: 'C:\\Users\\carlos\\code\\data-pipeline', branch: 'main' },
+  { name: 'landing-site', root: 'C:\\Users\\carlos\\code\\landing-site', branch: 'main' },
+  { name: 'whatsapp-gateway', root: 'C:\\Users\\carlos\\code\\whatsapp-gateway', branch: 'main' },
+];
+
+// [project index, hours ago, title, kind, prompts]
+const CHATS = [
+  [4, 0.4, 'Corrigir retry de webhooks do WhatsApp', 'pipeline-rework', ['/agent-fleet-3d:pipeline corrigir o bug WA-214 (leia o card no Jira antes de começar)']],
+  [0, 1.5, 'Idempotência no pagamento', 'pipeline', ['/agent-fleet-3d:pipeline retry com idempotência no pagamento']],
+  [0, 3, 'Investigar lentidão no /checkout', 'plain', ['o endpoint /checkout está lento em produção, investigue', 'adicione um índice na tabela orders', 'rode os testes de novo']],
+  [1, 5, 'Explicar navegação do app', 'explore', ['me explique como a navegação do app funciona', 'onde fica o fluxo de login?']],
+  [3, 20, 'Auditoria de acessibilidade', 'plain', ['faça uma auditoria de acessibilidade na landing page', 'corrija os contrastes apontados']],
+  [2, 27, 'Deduplicar eventos de pedido', 'pipeline', ['/agent-fleet-3d:pipeline deduplicar eventos de pedido']],
+  [4, 30, 'Mapear limites da API da Meta', 'plain', ['quais limites de mensagens por segundo a Cloud API tem?', 'escreva um resumo no docs/limites.md']],
+  [1, 52, 'Tela de onboarding com biometria', 'pipeline-rework', ['/agent-fleet-3d:pipeline tela de onboarding com biometria']],
+  [0, 70, 'ADR sobre fila de pagamentos', 'plain', ['crie um ADR registrando por que escolhemos SQS para a fila de pagamentos']],
+  [2, 96, 'Particionar tabela de vendas', 'explore', ['planeje o particionamento da tabela de vendas', 'gere a migration']],
+  [3, 140, 'Melhorar LCP da home', 'pipeline', ['/agent-fleet-3d:pipeline melhorar LCP da home']],
+  [4, 300, 'Template de mensagem de cobrança', 'plain', ['crie o template de cobrança e o teste de envio']],
+  [0, 500, 'Revisar PR de estornos', 'plain', ['revise esse PR de estornos e faça o code review']],
+  [1, 900, 'Atualizar React Native', 'explore', ['atualize o React Native para a versão estável mais recente', 'corrija os erros de build']],
+];
+
+const TOOLSETS = {
+  read: [
+    ['Read', { file_path: 'src/payments/service.ts' }],
+    ['Grep', { pattern: 'processPayment' }],
+    ['Glob', { pattern: 'src/**/*.ts' }],
+    ['Read', { file_path: 'package.json' }],
+  ],
+  edit: [
+    ['Edit', { file_path: 'src/payments/retry-policy.ts' }],
+    ['Write', { file_path: 'test/retry-policy.spec.ts' }],
+    ['Edit', { file_path: 'src/webhooks/handler.ts' }],
+  ],
+  exec: [
+    ['Bash', { command: 'npm test', description: 'Rodar testes unitários' }],
+    ['Bash', { command: 'npm run lint', description: 'npm run lint' }],
+    ['Bash', { command: 'git diff', description: 'git diff' }],
+  ],
+  web: [['WebSearch', { query: 'whatsapp cloud api rate limits' }], ['WebFetch', { url: 'https://developers.facebook.com/docs' }]],
+};
+
+const STAGE_TOOLS = {
+  'tech-lead': [['Read', { file_path: 'C:\\plugins\\agent-fleet-3d\\skills-library\\development\\tlc-plan\\SKILL.md' }], ['Grep', { pattern: 'retry' }], ['Read', { file_path: 'src/webhooks/handler.ts' }], ['Write', { file_path: '.agent-pipeline/x/PLAN.md' }]],
+  engineer: [['Read', { file_path: 'C:\\plugins\\agent-fleet-3d\\skills-library\\development\\tlc-implement\\SKILL.md' }], ['Edit', { file_path: 'src/webhooks/handler.ts' }], ['Write', { file_path: 'test/handler.spec.ts' }], ['Bash', { command: 'npm test', description: 'Rodar testes unitários' }], ['Write', { file_path: '.agent-pipeline/x/IMPLEMENTATION.md' }]],
+  qa: [['Read', { file_path: 'C:\\plugins\\agent-fleet-3d\\skills-library\\development\\spec-driven-eval\\SKILL.md' }], ['Bash', { command: 'npm test', description: 'Rodar testes unitários' }], ['Bash', { command: 'git diff', description: 'git diff' }], ['Write', { file_path: '.agent-pipeline/x/QA.md' }]],
+  devops: [['Bash', { command: 'git status', description: 'git status' }], ['Bash', { command: 'git checkout -b fix/webhook-retry', description: 'git checkout -b fix/webhook-retry' }], ['Bash', { command: 'git commit', description: 'git commit -m "fix(webhooks): retry com backoff"' }], ['Bash', { command: 'git push', description: 'git push -u origin fix/webhook-retry' }], ['Bash', { command: 'gh pr create', description: 'gh pr create' }]],
+};
+
+function demoTranscripts(now = Date.now(), seed = 7) {
+  const r = rng(seed);
+  const pick = (a) => a[Math.floor(r() * a.length)];
+  let uid = 0;
+  const id = (p) => `${p}_${(uid++).toString(36)}`;
+  return CHATS.map(([pi, hoursAgo, title, kind, prompts], ci) => {
+    const p = PROJECTS[pi];
+    const sid = `demo-${ci.toString().padStart(2, '0')}-${Math.floor(r() * 1e8).toString(16)}`;
+    let t = now - hoursAgo * 3600e3;
+    const lines = [];
+    const subagents = [];
+    const common = () => ({ sessionId: sid, cwd: p.root, gitBranch: p.branch, entrypoint: 'claude-desktop', timestamp: new Date(t).toISOString() });
+    const tick = (s) => (t += (s + r() * s) * 1000);
+    const user = (text) => lines.push({ type: 'user', origin: { kind: 'human' }, message: { role: 'user', content: text }, ...common() });
+    const tool = (name, input, err = false) => {
+      const tid = id('toolu');
+      lines.push({ type: 'assistant', message: { role: 'assistant', content: [{ type: 'tool_use', id: tid, name, input }] }, ...common() });
+      tick(name === 'Bash' ? 6 : 2);
+      lines.push({ type: 'user', message: { role: 'user', content: [{ type: 'tool_result', tool_use_id: tid, content: err ? 'Error: exit code 1' : 'ok', is_error: err }] }, ...common() });
+    };
+    const say = (text) => lines.push({ type: 'assistant', message: { role: 'assistant', content: [{ type: 'text', text }] }, ...common() });
+    const agent = (type, desc, result, tools) => {
+      const tid = id('toolu');
+      const prompt = `${desc}. Pasta: .agent-pipeline/${sid}/`;
+      lines.push({ type: 'assistant', message: { role: 'assistant', content: [{ type: 'tool_use', id: tid, name: 'Agent', input: { subagent_type: type, description: desc, prompt } }] }, ...common() });
+      const sub = [{ type: 'user', message: { role: 'user', content: prompt }, sessionId: sid, timestamp: new Date(t).toISOString(), isSidechain: true }];
+      for (const [name, input] of tools) {
+        const sid2 = id('toolu');
+        tick(4);
+        sub.push({ type: 'assistant', message: { role: 'assistant', content: [{ type: 'tool_use', id: sid2, name, input }] }, sessionId: sid, timestamp: new Date(t).toISOString(), isSidechain: true });
+        tick(3);
+        const fail = name === 'Bash' && r() < 0.12;
+        sub.push({ type: 'user', message: { role: 'user', content: [{ type: 'tool_result', tool_use_id: sid2, content: fail ? 'exit code 1' : 'ok', is_error: fail }] }, sessionId: sid, timestamp: new Date(t).toISOString(), isSidechain: true });
+      }
+      subagents.push(sub);
+      tick(3);
+      lines.push({ type: 'user', message: { role: 'user', content: [{ type: 'tool_result', tool_use_id: tid, content: [{ type: 'text', text: result }] }] }, ...common() });
+    };
+
+    lines.push({ type: 'ai-title', aiTitle: title, sessionId: sid });
+    for (const [k, prompt] of prompts.entries()) {
+      user(prompt);
+      tick(3);
+      if (kind.startsWith('pipeline') && k === 0) {
+        agent('agent-fleet-3d:tech-lead', `Planejar: ${title}`, 'PLAN.md com 4 tarefas e 5 critérios de aceite', STAGE_TOOLS['tech-lead']);
+        agent('agent-fleet-3d:engineer', `Implementar: ${title}`, 'Testes passando, IMPLEMENTATION.md escrito', STAGE_TOOLS.engineer);
+        if (kind === 'pipeline-rework') {
+          agent('agent-fleet-3d:qa', `Testar: ${title}`, '2 critérios falharam: timeout não respeitado\nVEREDITO: REPROVADO', STAGE_TOOLS.qa);
+          agent('agent-fleet-3d:engineer', 'Retrabalho do QA', 'Falhas do QA.md corrigidas', STAGE_TOOLS.engineer.slice(1));
+        }
+        agent('agent-fleet-3d:qa', `Testar: ${title}`, 'Todos os critérios passaram\nVEREDITO: APROVADO', STAGE_TOOLS.qa);
+        agent('agent-fleet-3d:devops', 'Subir para o git', `PR #${40 + ci} aberto em fix/${title.toLowerCase().split(' ')[0]}`, STAGE_TOOLS.devops);
+        say(`Entregue: ${title}. QA aprovado, PR aberto.`);
+        continue;
+      }
+      if (kind === 'explore' && k === 0) agent('Explore', `Mapear: ${prompt.slice(0, 40)}`, 'Mapa dos módulos escrito', TOOLSETS.read);
+      const n = 3 + Math.floor(r() * 7);
+      for (let i = 0; i < n; i++) {
+        const set = i < 2 ? 'read' : pick(['read', 'edit', 'edit', 'exec', 'web']);
+        const [name, input] = pick(TOOLSETS[set]);
+        tool(name, input, name === 'Bash' && r() < 0.1);
+      }
+      say('Pronto. Resumo do que mudou e como testar.');
+      tick(30);
+    }
+    lines.push({ type: 'cost-state', sessionId: sid, totalCostUSD: Math.round((0.2 + r() * 3.5) * 100) / 100 });
+    return { lines, subagents };
+  });
+}
+
+return { demoTranscripts };
 })();
 const { createScene } = (() => {
 // 3D delivery flow for one project. Each main session is a row:
@@ -1356,6 +2067,7 @@ function createScene(host, { onSelect, onFocusRow } = {}) {
   }
   let currentProject = null;
   let lastRowCount = -1;
+  let visible = true;
 
   function select(id) {
     selected = id;
@@ -1446,7 +2158,7 @@ function createScene(host, { onSelect, onFocusRow } = {}) {
   let simT = 0;
   function loop() {
     requestAnimationFrame(loop);
-    if (document.hidden) return;
+    if (document.hidden || !visible) return;
     const dt = Math.min(clock.getDelta(), 0.1);
     if (!reduceMotion) simT += dt;
     const t = simT;
@@ -1588,11 +2300,486 @@ function createScene(host, { onSelect, onFocusRow } = {}) {
   applyTheme();
   loop();
 
-  return { setProject, select, focusRow, setInset, recenter };
+  function setVisible(v) {
+    visible = v;
+    host.hidden = !v;
+    if (v) {
+      resize();
+      frame(lastRowCount);
+    }
+  }
+
+  return { setProject, select, focusRow, setInset, recenter, setVisible };
 }
 
 return { createScene };
 })();
+const { createHistoryScene } = (() => {
+// 3D history of one chat: a serpentine conveyor where time runs along the path.
+// Each prompt is a gate, each tool call a cube on the belt (colored by kind), and each
+// subagent a branch off the belt; pipeline stages use the station shapes of the flow view.
+
+
+
+
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const ROW_W = 28;
+const ROW_GAP = 7;
+const GAP = { turn: 1.8, tool: 0.52, agent: 2.2 };
+const MAX_ITEMS = 1500;
+const STAGE_LABEL = { plan: 'Tech Lead', build: 'Engenheiro', test: 'QA', ship: 'DevOps' };
+
+function glowTexture() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 128;
+  const g = c.getContext('2d');
+  const grd = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+  grd.addColorStop(0, 'rgba(255,255,255,1)');
+  grd.addColorStop(0.25, 'rgba(255,255,255,0.45)');
+  grd.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = grd;
+  g.fillRect(0, 0, 128, 128);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+const el = (tag, cls, text) => {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+};
+
+// arc-length position s → point on the serpentine
+function posAt(s) {
+  const row = Math.floor(s / ROW_W);
+  const local = s - row * ROW_W;
+  const x = row % 2 === 0 ? -ROW_W / 2 + local : ROW_W / 2 - local;
+  return new THREE.Vector3(x, 0, -row * ROW_GAP);
+}
+
+function createHistoryScene(host, { onSelectTurn, onHover } = {}) {
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  host.appendChild(renderer.domElement);
+  const labelRenderer = new CSS2DRenderer();
+  Object.assign(labelRenderer.domElement.style, { position: 'absolute', inset: '0', pointerEvents: 'none' });
+  host.appendChild(labelRenderer.domElement);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 600);
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.minDistance = 6;
+  controls.maxDistance = 160;
+  controls.maxPolarAngle = 1.45;
+  scene.add(new THREE.AmbientLight(0xffffff, 0.85));
+  const sun = new THREE.DirectionalLight(0xffffff, 1.0);
+  sun.position.set(-10, 20, 12);
+  scene.add(sun);
+  const glow = glowTexture();
+
+  let pal = {};
+  let light = false;
+  function readPalette() {
+    const keys = ['sky', 'panel', 'ink', 'ink-2', 'ink-3', 'running', 'thinking', 'waiting', 'error', 'idle', 'focus'];
+    pal = Object.fromEntries(keys.map((k) => [k, new THREE.Color(css('--' + k))]));
+    light = pal.sky.getHSL({}).l > 0.5;
+    scene.background = pal.sky;
+    scene.fog = new THREE.Fog(pal.sky, 70, 220);
+  }
+  readPalette();
+  const catColor = (cat, err) =>
+    err ? pal.error : { read: pal['ink-3'], edit: pal.thinking, exec: pal.running, web: pal.waiting, mcp: pal.focus, delegate: pal.ink, other: pal['ink-2'] }[cat] || pal['ink-2'];
+
+  const geo = {
+    tool: new THREE.BoxGeometry(0.32, 0.32, 0.32),
+    mini: new THREE.BoxGeometry(0.16, 0.16, 0.16),
+    gate: new THREE.TorusGeometry(0.62, 0.09, 10, 40),
+    gateCore: new THREE.SphereGeometry(0.22, 18, 12),
+    plan: new THREE.OctahedronGeometry(0.42, 0),
+    build: new THREE.BoxGeometry(0.58, 0.58, 0.58),
+    test: new THREE.TorusGeometry(0.34, 0.1, 10, 32),
+    ship: new THREE.ConeGeometry(0.34, 0.8, 6),
+    agent: new THREE.SphereGeometry(0.3, 18, 12),
+    pad: new THREE.CylinderGeometry(0.75, 0.85, 0.12, 6),
+  };
+
+  let root = null; // THREE.Group for the current chat
+  let model = null; // layout data
+  let selectedTurn = null;
+  let live = false;
+  let visible = true;
+
+  function clear() {
+    if (!root) return;
+    scene.remove(root);
+    root.traverse((o) => {
+      if (o.isCSS2DObject) o.element.remove();
+      if (o.material) o.material.dispose?.();
+      if (o.geometry && !Object.values(geo).includes(o.geometry)) o.geometry.dispose();
+    });
+    root = null;
+    model = null;
+  }
+
+  function label(cls, parts) {
+    const holder = el('div');
+    const card = el('div', 'fcard ' + cls);
+    for (const [c, t] of parts) if (t) card.appendChild(el('div', c, t));
+    holder.appendChild(card);
+    const o = new CSS2DObject(holder);
+    o.center.set(0.5, 1);
+    return { o, card };
+  }
+
+  /** Lay out a parsed history ({ meta, turns }) and build the meshes. */
+  function setHistory(h, { isLive = false } = {}) {
+    const sameChat = model && h && model.id === h.meta.id;
+    const prevCount = model?.count;
+    clear();
+    live = isLive;
+    if (!h) return;
+    readPalette();
+    root = new THREE.Group();
+    scene.add(root);
+
+    // flatten turns → positioned items; keep only the newest MAX_ITEMS tool calls
+    let budget = MAX_ITEMS;
+    const turns = h.turns;
+    const keepFrom = (() => {
+      let n = 0;
+      for (let i = turns.length - 1; i >= 0; i--) {
+        n += turns[i].items.length;
+        if (n > budget) return i + 1;
+      }
+      return 0;
+    })();
+    const items = [];
+    let s = 0.5;
+    for (let ti = keepFrom; ti < turns.length; ti++) {
+      const turn = turns[ti];
+      items.push({ kind: 'turn', turn, s });
+      s += GAP.turn * 0.7;
+      for (const it of turn.items) {
+        // avoid placing an item on the U-turn: push to next row start
+        const room = ROW_W - (s % ROW_W);
+        if (room < 0.6) s += room + 0.4;
+        items.push({ kind: it.kind, ref: it.ref, turn, s });
+        s += it.kind === 'agent' ? GAP.agent : GAP.tool;
+      }
+      s += GAP.turn * 0.3;
+    }
+    const length = Math.max(s, 4);
+    const rows = Math.floor(length / ROW_W) + 1;
+
+    // conveyor: straight segments + U-turns
+    const beltMat = new THREE.MeshStandardMaterial({ color: pal['ink-3'], roughness: 0.6, transparent: true, opacity: light ? 0.55 : 0.45 });
+    for (let r = 0; r < rows; r++) {
+      const segLen = Math.min(ROW_W, length - r * ROW_W);
+      if (segLen <= 0) break;
+      const a = posAt(r * ROW_W);
+      const b = posAt(r * ROW_W + segLen - 0.001);
+      const tube = new THREE.Mesh(new THREE.TubeGeometry(new THREE.LineCurve3(a.clone().setY(-0.12), b.clone().setY(-0.12)), 8, 0.06, 6, false), beltMat);
+      root.add(tube);
+      if (r < rows - 1 && segLen >= ROW_W - 0.01) {
+        const end = posAt(r * ROW_W + ROW_W - 0.001);
+        const side = r % 2 === 0 ? 1 : -1;
+        const pts = [];
+        for (let k = 0; k <= 16; k++) {
+          const ang = (k / 16) * Math.PI;
+          pts.push(new THREE.Vector3(end.x + side * Math.sin(ang) * (ROW_GAP / 2), -0.12, end.z - ROW_GAP / 2 + Math.cos(ang) * (ROW_GAP / 2)));
+        }
+        root.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 24, 0.06, 6, false), beltMat));
+      }
+    }
+    // faint floor under the whole path
+    const floor = new THREE.Mesh(
+      new THREE.PlaneGeometry(ROW_W + 10, rows * ROW_GAP + 6),
+      new THREE.MeshBasicMaterial({ color: pal.panel, transparent: true, opacity: light ? 0.55 : 0.35 })
+    );
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.set(0, -0.5, -((rows - 1) * ROW_GAP) / 2);
+    root.add(floor);
+
+    // tools as one instanced mesh
+    const toolItems = items.filter((i) => i.kind === 'tool');
+    const tools = new THREE.InstancedMesh(geo.tool, new THREE.MeshStandardMaterial({ roughness: 0.4, metalness: 0.1 }), Math.max(1, toolItems.length));
+    tools.count = toolItems.length;
+    const m4 = new THREE.Matrix4();
+    toolItems.forEach((it, k) => {
+      const p = posAt(it.s);
+      m4.makeTranslation(p.x, 0.12, p.z);
+      tools.setMatrixAt(k, m4);
+      tools.setColorAt(k, catColor(it.ref.cat, it.ref.err));
+      it.index = k;
+    });
+    if (tools.instanceColor) tools.instanceColor.needsUpdate = true;
+    tools.userData.items = toolItems;
+    root.add(tools);
+
+    // turn gates
+    const gates = [];
+    const turnItems = items.filter((i) => i.kind === 'turn');
+    for (const it of turnItems) {
+      const p = posAt(it.s);
+      const g = new THREE.Group();
+      g.position.copy(p);
+      const ring = new THREE.Mesh(geo.gate, new THREE.MeshStandardMaterial({ color: pal.focus, emissive: pal.focus, emissiveIntensity: 0.35, roughness: 0.3 }));
+      ring.position.y = 0.55;
+      ring.rotation.y = Math.PI / 2;
+      const core = new THREE.Mesh(geo.gateCore, new THREE.MeshStandardMaterial({ color: pal.focus, emissive: pal.focus, emissiveIntensity: 0.5 }));
+      core.position.y = 0.55;
+      const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, transparent: true, depthWrite: false, color: pal.focus, opacity: 0 }));
+      halo.scale.setScalar(2.6);
+      halo.position.y = 0.55;
+      g.add(ring, core, halo);
+      for (const m of [ring, core]) m.userData.pick = { kind: 'turn', turn: it.turn };
+      root.add(g);
+      gates.push({ g, ring, core, halo, it });
+    }
+
+    // agents: branch off the belt toward the camera
+    const agents = [];
+    for (const it of items.filter((i) => i.kind === 'agent')) {
+      const a = it.ref;
+      const p = posAt(it.s);
+      const node = new THREE.Vector3(p.x, 0.35, p.z + 2.1);
+      const color = a.stage
+        ? a.verdict === 'fail' || a.err
+          ? pal.error
+          : a.end || !a.live
+            ? pal.thinking
+            : pal.running
+        : a.err
+          ? pal.error
+          : pal.ink;
+      const arm = new THREE.Mesh(
+        new THREE.TubeGeometry(new THREE.CatmullRomCurve3([p.clone().setY(-0.12), new THREE.Vector3(p.x, -0.12, p.z + 1.2), node.clone().setY(-0.12)]), 10, 0.04, 6, false),
+        new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.7 })
+      );
+      root.add(arm);
+      const pad = new THREE.Mesh(geo.pad, new THREE.MeshStandardMaterial({ color: pal.panel, roughness: 0.8, transparent: true, opacity: 0.9 }));
+      pad.position.set(node.x, -0.42, node.z);
+      root.add(pad);
+      const shape = new THREE.Mesh(a.stage ? geo[a.stage] : geo.agent, new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.4, roughness: 0.35 }));
+      shape.position.copy(node);
+      shape.userData.pick = { kind: 'agent', agent: a, turn: it.turn };
+      root.add(shape);
+      // its own steps as a short line of mini cubes
+      const n = Math.min(a.tools.length, 14);
+      for (let k = 0; k < n; k++) {
+        const tl = a.tools[a.tools.length - n + k];
+        const c = new THREE.Mesh(geo.mini, new THREE.MeshStandardMaterial({ color: catColor(tl.cat, tl.err), roughness: 0.5 }));
+        c.position.set(node.x + (k - (n - 1) / 2) * 0.23, -0.28, node.z + 0.95);
+        root.add(c);
+      }
+      let lab = null;
+      if (a.stage) {
+        lab = label(`stage ${a.verdict === 'fail' ? 'failed' : a.end ? 'done' : 'active'} quiet`, [['n', STAGE_LABEL[a.stage]]]);
+        lab.o.position.set(node.x, node.y + 0.75, node.z);
+        root.add(lab.o);
+      }
+      agents.push({ shape, it, lab });
+    }
+
+    // labels: first prompt, last prompt and the selected one (others on hover)
+    const turnLabel = label('origin focus hist', []);
+    root.add(turnLabel.o);
+    const nowLabel = label('stage active quiet', [['n', 'agora']]);
+    root.add(nowLabel.o);
+    nowLabel.o.visible = false;
+    const tail = posAt(length - 0.3);
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.26, 18, 12), new THREE.MeshStandardMaterial({ color: pal.running, emissive: pal.running, emissiveIntensity: 0.8 }));
+    head.position.set(tail.x, 0.12, tail.z);
+    head.visible = isLive;
+    root.add(head);
+    nowLabel.o.position.set(tail.x, 0.9, tail.z);
+    nowLabel.o.visible = isLive;
+
+    model = { id: h.meta.id, items, gates, agents, tools, turnLabel, head, length, rows, count: items.length, firstTurn: keepFrom };
+    const pickables = [tools, ...gates.flatMap((g) => [g.ring, g.core]), ...agents.map((a) => a.shape)];
+    model.pickables = pickables;
+    if (selectedTurn != null && !turnItems.some((x) => x.turn.n === selectedTurn)) selectedTurn = null;
+    applySelection();
+    if (!sameChat) frame();
+    else if (prevCount !== model.count && isLive) {
+      /* keep the camera where the user left it while the chat grows */
+    }
+  }
+
+  function applySelection() {
+    if (!model) return;
+    const sel = selectedTurn ?? model.gates[model.gates.length - 1]?.it.turn.n;
+    for (const g of model.gates) {
+      const on = g.it.turn.n === sel;
+      g.halo.material.opacity = on ? (light ? 0.5 : 0.8) : 0;
+      g.g.scale.setScalar(on ? 1.25 : 1);
+    }
+    const gate = model.gates.find((g) => g.it.turn.n === sel);
+    const tl = model.turnLabel;
+    tl.card.replaceChildren();
+    if (gate) {
+      const t = gate.it.turn;
+      tl.card.appendChild(el('div', 'n', `Prompt ${t.n + 1}`));
+      tl.card.appendChild(el('div', 't', t.prompt ? t.prompt.slice(0, 90) : '(início da sessão)'));
+      tl.card.appendChild(el('div', 'm', `${t.tools.length} ferramenta${t.tools.length === 1 ? '' : 's'}${t.agents.length ? `, ${t.agents.length} subagente${t.agents.length > 1 ? 's' : ''}` : ''}`));
+      tl.o.position.set(gate.g.position.x, 1.5, gate.g.position.z);
+      tl.o.visible = true;
+    } else tl.o.visible = false;
+  }
+
+  function selectTurn(n) {
+    selectedTurn = n;
+    applySelection();
+  }
+
+  // ------------------------------------------------------------ camera
+  let fly = null;
+  let rightInset = 0;
+  function frame() {
+    if (!model) return;
+    const { clientWidth: w, clientHeight: h } = host;
+    const visibleW = Math.max(200, w - (w > 900 ? rightInset : 0));
+    const aspect = visibleW / Math.max(h, 1);
+    const vfov = THREE.MathUtils.degToRad(camera.fov);
+    const hfov = 2 * Math.atan(Math.tan(vfov / 2) * aspect);
+    // bounds of what was actually drawn (short chats only use part of the first row)
+    let minX = Infinity, maxX = -Infinity;
+    for (const it of model.items) {
+      const p = posAt(it.s);
+      minX = Math.min(minX, p.x);
+      maxX = Math.max(maxX, p.x);
+    }
+    if (!Number.isFinite(minX)) (minX = -2), (maxX = 2);
+    if (model.rows > 1) (minX = -ROW_W / 2), (maxX = ROW_W / 2);
+    const halfW = Math.max(9, (maxX - minX) / 2 + 3);
+    const depth = (model.rows - 1) * ROW_GAP + 4;
+    const dW = halfW / Math.tan(hfov / 2) + depth * 0.35;
+    const dH = (depth * 0.6 + 4) / Math.tan(vfov / 2);
+    const dist = Math.max(dW, dH, 12);
+    const target = new THREE.Vector3((minX + maxX) / 2, 0, -((model.rows - 1) * ROW_GAP) / 2 + 1);
+    const pos = new THREE.Vector3(target.x, dist * 0.72, target.z + dist * 0.69);
+    if (reduceMotion) {
+      camera.position.copy(pos);
+      controls.target.copy(target);
+      return;
+    }
+    fly = { from: camera.position.clone(), fromT: controls.target.clone(), pos, target, t0: performance.now() };
+  }
+  camera.position.set(0, 20, 22);
+
+  // ------------------------------------------------------------ picking + hover
+  const ray = new THREE.Raycaster();
+  const mouse = new THREE.Vector2();
+  let down = null;
+  function pick(e) {
+    if (!model) return null;
+    const r = renderer.domElement.getBoundingClientRect();
+    mouse.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+    ray.setFromCamera(mouse, camera);
+    const hit = ray.intersectObjects(model.pickables, false)[0];
+    if (!hit) return null;
+    if (hit.object === model.tools) {
+      const it = model.tools.userData.items[hit.instanceId];
+      return it ? { kind: 'tool', tool: it.ref, turn: it.turn } : null;
+    }
+    return hit.object.userData.pick;
+  }
+  renderer.domElement.addEventListener('pointerdown', (e) => (down = [e.clientX, e.clientY]));
+  renderer.domElement.addEventListener('pointerup', (e) => {
+    if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 5) return;
+    const p = pick(e);
+    if (p?.turn) onSelectTurn?.(p.turn.n, p);
+  });
+  renderer.domElement.addEventListener('pointermove', (e) => {
+    const p = pick(e);
+    renderer.domElement.style.cursor = p ? 'pointer' : '';
+    const r = host.getBoundingClientRect();
+    onHover?.(p, { x: e.clientX - r.left, y: e.clientY - r.top });
+  });
+  renderer.domElement.addEventListener('pointerleave', () => onHover?.(null));
+
+  // ------------------------------------------------------------ loop
+  function resize() {
+    const { clientWidth: w, clientHeight: h } = host;
+    renderer.setSize(w, h);
+    labelRenderer.setSize(w, h);
+    camera.aspect = w / Math.max(h, 1);
+    if (rightInset && w > 900) camera.setViewOffset(w, h, rightInset / 2, 0, w, h);
+    else camera.clearViewOffset();
+    camera.updateProjectionMatrix();
+  }
+  function setInset(px) {
+    if (px === rightInset) return;
+    rightInset = px;
+    resize();
+    frame();
+  }
+  new ResizeObserver(resize).observe(host);
+  resize();
+
+  const retheme = () => {
+    readPalette();
+    if (model) {
+      // rebuild colors cheaply by re-running layout with the same data
+      const h = lastData;
+      if (h) setHistory(h, { isLive: live });
+    }
+  };
+  let lastData = null;
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', retheme);
+  new MutationObserver(retheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+  const clock = new THREE.Clock();
+  let simT = 0;
+  function loop() {
+    requestAnimationFrame(loop);
+    if (document.hidden || !visible) return;
+    const dt = Math.min(clock.getDelta(), 0.1);
+    if (!reduceMotion) simT += dt;
+    if (fly) {
+      const u = Math.min(1, (performance.now() - fly.t0) / 1000);
+      const e = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+      camera.position.lerpVectors(fly.from, fly.pos, e);
+      controls.target.lerpVectors(fly.fromT, fly.target, e);
+      if (u >= 1) fly = null;
+    }
+    if (model && !reduceMotion) {
+      for (const g of model.gates) g.ring.rotation.x += dt * 0.4;
+      if (model.head.visible) model.head.scale.setScalar(1 + 0.25 * Math.sin(simT * 5));
+      for (const a of model.agents) if (a.it.ref.stage && !a.it.ref.end && live) a.shape.rotation.y += dt * 1.5;
+    }
+    controls.update();
+    renderer.render(scene, camera);
+    labelRenderer.render(scene, camera);
+  }
+  loop();
+
+  return {
+    setHistory(h, opts) {
+      lastData = h;
+      setHistory(h, opts);
+    },
+    selectTurn,
+    setInset,
+    recenter: frame,
+    setVisible(v) {
+      visible = v;
+      host.hidden = !v;
+      if (v) resize();
+    },
+  };
+}
+
+return { createHistoryScene };
+})();
+
+
+
+
+
 
 const $ = (s) => document.querySelector(s);
 const STATUS_PT = {
@@ -1608,88 +2795,62 @@ const STATUS_PT = {
 };
 const STAGE_PT = { pending: 'Aguardando', active: 'Em andamento', done: 'Concluído', failed: 'Reprovado', stale: 'Sem atividade' };
 const RUN_PT = { running: 'Em andamento', complete: 'Entregue', blocked: 'Bloqueado pelo QA', waiting: 'Aguardando próxima etapa' };
+const STAGE_LABEL = { plan: 'Tech Lead', build: 'Engenheiro', test: 'QA', ship: 'DevOps' };
 
-// sel: null | { type: 'agent', id } | { type: 'stage', sid, key }
-const ui = { projects: [], details: {}, routes: null, selected: null, sel: null, focusSid: null, filter: '', mode: 'connecting' };
-
-const scene = createScene($('#scene'), {
-  onSelect: (s) => select(s == null ? null : typeof s === 'string' ? { type: 'agent', id: s } : { type: 'stage', ...s }),
-  onFocusRow: (sid) => {
-    ui.focusSid = sid;
-    scene.focusRow(sid);
+const store = {
+  get(k, d) {
+    try {
+      const v = localStorage.getItem('fleet:' + k);
+      return v == null ? d : JSON.parse(v);
+    } catch {
+      return d;
+    }
   },
+  set(k, v) {
+    try {
+      localStorage.setItem('fleet:' + k, JSON.stringify(v));
+    } catch {}
+  },
+};
+
+const ui = {
+  mode: 'connecting',
+  chats: [],
+  chatId: null,
+  detail: null,
+  detailSig: '',
+  view: 'history',
+  turn: null,
+  sel: null, // pipeline selection: { type: 'agent', id } | { type: 'stage', sid, key }
+  q: '',
+  group: store.get('group', 'date'),
+  show: store.get('show', 'all'),
+  collapsed: new Set(store.get('collapsed', [])),
+  routes: null,
+  dirs: [],
+};
+
+// ------------------------------------------------------------------ scenes
+const history = createHistoryScene($('#scene-history'), {
+  onSelectTurn: (n) => selectTurn(n),
+  onHover: (p, at) => showTip(p, at),
 });
-
-// ------------------------------------------------------------------ data
-let es = null;
-function connectLive() {
-  return new Promise((resolve) => {
-    if (!location.protocol.startsWith('http')) return resolve(false);
-    let opened = false;
-    es = new EventSource('/api/stream');
-    const timer = setTimeout(() => {
-      if (!opened) {
-        es.close();
-        resolve(false);
-      }
-    }, 2500);
-    es.addEventListener('update', (m) => {
-      const d = JSON.parse(m.data);
-      if (!opened) {
-        opened = true;
-        clearTimeout(timer);
-        ui.mode = d.demo ? 'demo' : 'live';
-        resolve(true);
-      }
-      ui.projects = d.projects;
-      ui.routes = d.routes;
-      Object.assign(ui.details, d.details);
-      render();
-    });
-    es.onerror = () => {
-      if (!opened) {
-        clearTimeout(timer);
-        es.close();
-        resolve(false);
-      } else setConn('Reconectando…', '');
-    };
-  });
-}
-
-let local = null;
-function startLocalDemo() {
-  if (local) return;
-  es?.close();
-  const state = createState();
-  local = state;
-  ui.mode = 'demo';
-  startDemo((ev) => apply(state, ev), { speed: 1.2 });
-  const pull = () => {
-    const now = Date.now();
-    ui.projects = listProjects(state, now);
-    ui.routes = state.routes;
-    for (const p of ui.projects) ui.details[p.id] = projectDetail(state, p.id, now);
-    render();
-  };
-  pull();
-  setInterval(pull, 500);
-}
-
-async function ensureDetail(id) {
-  if (ui.details[id] || ui.mode !== 'live') return;
-  try {
-    const r = await fetch(`/api/projects/${encodeURIComponent(id)}`);
-    if (r.ok) ui.details[id] = await r.json();
-  } catch {}
-}
+const pipeline = createScene($('#scene'), {
+  onSelect: (s) => selectStage(s == null ? null : typeof s === 'string' ? { type: 'agent', id: s } : { type: 'stage', ...s }),
+  onFocusRow: () => {},
+});
+pipeline.setVisible(false);
 
 // ------------------------------------------------------------------ helpers
 function ago(t) {
+  if (!t) return '';
   const s = Math.max(0, Math.round((Date.now() - t) / 1000));
   if (s < 10) return 'agora';
   if (s < 60) return `há ${s}s`;
   if (s < 3600) return `há ${Math.round(s / 60)} min`;
-  return `há ${Math.round(s / 3600)} h`;
+  if (s < 86400) return `há ${Math.round(s / 3600)} h`;
+  if (s < 86400 * 7) return `há ${Math.round(s / 86400)} d`;
+  return new Date(t).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
 }
 function dur(ms) {
   if (!ms || ms < 0) return '';
@@ -1730,125 +2891,352 @@ function pipeBar(stages, compact) {
   });
   return bar;
 }
-function runSummary(run) {
-  if (!run) return 'Sem pipeline nesta sessão';
-  if (run.status === 'complete') return 'Entregue no git';
-  if (run.status === 'blocked') return 'QA reprovou, aguardando decisão';
-  const s = run.stages.find((x) => x.key === run.current);
-  return s ? `${s.label}: ${s.status === 'active' ? s.verb.toLowerCase() : 'próxima etapa'}` : RUN_PT[run.status];
+const money = (v) => (v == null ? null : `US$ ${v.toFixed(2).replace('.', ',')}`);
+const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+
+// ------------------------------------------------------------------ data: live server
+async function getJSON(url) {
+  const r = await fetch(url, { cache: 'no-store' });
+  if (!r.ok) throw new Error(String(r.status));
+  return r.json();
 }
 
-// ------------------------------------------------------------------ render
-function renderProjects() {
-  const list = $('#projects');
-  const focusId = document.activeElement?.dataset?.pid;
-  const q = ui.filter.trim().toLowerCase();
-  const items = ui.projects.filter((p) => !q || p.name.toLowerCase().includes(q) || p.root.toLowerCase().includes(q));
-  list.replaceChildren();
-  if (!ui.projects.length) {
-    const li = el('li', 'empty');
-    li.append(el('div', null, 'Nenhum agente trabalhando agora. Rode /agent-fleet-3d:pipeline com uma tarefa e o projeto aparece aqui assim que o Tech Lead começar.'));
-    if (ui.mode !== 'demo') li.append(button(null, startLocalDemo, 'Ver demonstração'));
-    list.append(li);
+let pollTimer = null;
+async function connectLive() {
+  if (!location.protocol.startsWith('http')) return false;
+  try {
+    const h = await getJSON('/api/health');
+    if (h.demo) return false;
+    ui.mode = 'live';
+    await refreshList();
+    pollTimer = setInterval(refreshList, 5000);
+    setInterval(refreshDetail, 3000);
+    return true;
+  } catch {
+    return false;
+  }
+}
+async function refreshList() {
+  if (ui.mode !== 'live') return;
+  try {
+    const d = await getJSON('/api/chats');
+    ui.chats = d.chats;
+    ui.routes = d.routes;
+    ui.dirs = d.dirs || [];
+    render();
+  } catch {
+    setConn('Reconectando…', '');
+  }
+}
+async function refreshDetail() {
+  if (!ui.chatId) return;
+  if (ui.mode === 'demo') return setDetail(demoDetail(ui.chatId));
+  try {
+    setDetail(await getJSON(`/api/chats/${encodeURIComponent(ui.chatId)}`));
+  } catch {}
+}
+
+// ------------------------------------------------------------------ data: demo (no server)
+let demo = null;
+function startLocalDemo() {
+  if (demo) return;
+  clearInterval(pollTimer);
+  ui.mode = 'demo';
+  const now = Date.now();
+  const parsed = demoTranscripts(now).map((t) => parseTranscript(t.lines, { subagents: t.subagents }));
+  const state = createState();
+  startDemo((ev) => apply(state, ev), { speed: 1.2 });
+  demo = { parsed, state };
+  const pull = () => {
+    const now = Date.now();
+    const live = [];
+    for (const p of listProjects(state, now)) {
+      const d = projectDetail(state, p.id, now);
+      for (const f of d.flows) {
+        const h = historyFromLive(d, f.sid);
+        if (h) live.push({ ...h.meta, live: f.status !== 'idle', status: f.status, step: f.step, _live: { pid: p.id } });
+      }
+    }
+    ui.chats = [...live, ...parsed.map((p) => ({ ...p.meta, live: false }))];
+    ui.routes = state.routes;
+    render();
+    if (ui.chatId && live.some((c) => c.id === ui.chatId)) setDetail(demoDetail(ui.chatId));
+  };
+  pull();
+  setInterval(pull, 1500);
+}
+function demoDetail(id) {
+  const now = Date.now();
+  const p = demo.parsed.find((x) => x.meta.id === id);
+  if (p) return { meta: p.meta, turns: p.turns, pipeline: p.meta.pipeline ? pipelineOf(p.events, id, now) : null, live: false };
+  const c = ui.chats.find((x) => x.id === id);
+  if (!c?._live) return null;
+  const d = projectDetail(demo.state, c._live.pid, now);
+  const h = historyFromLive(d, id);
+  return h ? { ...h, pipeline: { ...d, flows: d.flows.filter((f) => f.sid === id) }, live: c.live, status: c.status } : null;
+}
+
+// ------------------------------------------------------------------ list
+function visibleChats() {
+  return filterChats(ui.chats, { q: ui.q, show: ui.show });
+}
+
+function chatStages(c) {
+  if (!c.pipeline) return null;
+  const st = STAGES.map((s) => (c.stages?.includes(s.key) ? 'done' : 'pending'));
+  if (c.live) {
+    const last = st.lastIndexOf('done');
+    if (last >= 0 && last < 3) st[last] = 'active';
+  }
+  return st;
+}
+
+function renderList() {
+  const box = $('#chats');
+  const focusId = document.activeElement?.dataset?.cid;
+  box.replaceChildren();
+  const list = visibleChats();
+  $('#count').textContent = ui.chats.length ? `${list.length} de ${plural(ui.chats.length, 'chat', 'chats')}` : '';
+  if (!ui.chats.length) {
+    const e = el('div', 'empty');
+    e.append(el('p', null, ui.mode === 'live' ? 'Nenhum chat do Claude Code encontrado neste computador.' : 'Carregando chats…'));
+    if (ui.mode === 'live' && ui.dirs.length === 0) e.append(el('p', 'hint', 'A pasta de histórico do Claude Code não foi encontrada. Use o Claude Code na aba Code ao menos uma vez.'));
+    if (ui.mode !== 'demo') e.append(button(null, startLocalDemo, 'Ver demonstração'));
+    box.append(e);
     return;
   }
-  if (!items.length) {
-    list.append(el('li', 'empty', `Nenhum projeto corresponde a “${ui.filter}”.`));
+  if (!list.length) {
+    box.append(el('div', 'empty', 'Nenhum chat corresponde à busca e ao filtro.'));
     return;
   }
-  for (const p of items) {
-    const li = el('li');
-    const row = el('div', 'row');
-    row.append(el('span', 'name', p.name), el('span', 'when', ago(p.last)));
-    const status = p.pipe
-      ? `${RUN_PT[p.pipe.status]}${p.pipe.reworks ? `, ${p.pipe.reworks} retrabalho${p.pipe.reworks > 1 ? 's' : ''}` : ''}`
-      : `${p.counts.running + p.counts.thinking} de ${p.total} agentes ativos`;
-    const b = button('project', () => selectProject(p.id), row, pipeBar(p.pipe?.stages || [], true), el('div', 'pstatus ' + (p.pipe?.status || ''), status), el('div', 'step', p.step || ''));
-    b.setAttribute('aria-current', String(p.id === ui.selected));
-    b.setAttribute('aria-label', `${p.name}: ${status}`);
-    b.dataset.pid = p.id;
-    li.append(b);
-    list.append(li);
-    if (p.id === focusId) b.focus();
+  for (const g of groupChats(list, ui.group)) {
+    const sec = el('section', 'group');
+    const open = !ui.collapsed.has(g.key);
+    if (ui.group !== 'none') {
+      const h = button('group-h', () => {
+        if (ui.collapsed.has(g.key)) ui.collapsed.delete(g.key);
+        else ui.collapsed.add(g.key);
+        store.set('collapsed', [...ui.collapsed]);
+        renderList();
+      });
+      h.setAttribute('aria-expanded', String(open));
+      h.append(el('span', 'chev', open ? '▾' : '▸'), el('span', 'gname', g.label), el('span', 'gcount', String(g.chats.length)));
+      if (g.sub) h.title = g.sub;
+      sec.append(h);
+    }
+    if (open) {
+      const ul = el('ul', 'chat-ul');
+      for (const c of g.chats) {
+        const row = el('div', 'row');
+        row.append(el('span', 'name', c.title), el('span', 'when', ago(c.updated)));
+        const meta = el('div', 'cmeta');
+        if (c.live) meta.append(el('span', `dot ${c.status || 'running'}`));
+        if (ui.group !== 'project') meta.append(el('span', 'proj', c.project?.name || ''));
+        if (c.branch) meta.append(el('span', 'branch', c.branch));
+        meta.append(el('span', 'counts', `${plural(c.prompts, 'prompt', 'prompts')}${c.errors ? `, ${plural(c.errors, 'erro', 'erros')}` : ''}`));
+        const parts = [row, meta];
+        const st = chatStages(c);
+        if (st) parts.push(pipeBar(st, true));
+        if (c.live && c.step) parts.push(el('div', 'step', c.step));
+        const b = button('chat', () => selectChat(c.id), ...parts);
+        b.dataset.cid = c.id;
+        b.setAttribute('aria-current', String(c.id === ui.chatId));
+        ul.append(item(b));
+        if (c.id === focusId) queueMicrotask(() => b.focus());
+      }
+      sec.append(ul);
+    }
+    box.append(sec);
   }
 }
 
-function renderStage() {
-  const det = ui.selected ? ui.details[ui.selected] : null;
-  $('#placeholder').hidden = !!det;
-  $('#title').hidden = !det;
-  $('#drawer').hidden = !det;
-  $('#recenter').hidden = !det;
-  scene.setProject(det);
-  scene.setInset(det ? $('#drawer').offsetWidth + 24 : 0);
-  if (!det) return;
-  if (!ui.focusSid || !det.flows.some((f) => f.sid === ui.focusSid)) {
-    ui.focusSid = det.flows[0]?.sid || null;
-    scene.focusRow(ui.focusSid);
-  }
-  $('#p-name').textContent = det.name;
-  $('#p-root').textContent = det.root;
+// ------------------------------------------------------------------ detail
+function sigOf(d) {
+  if (!d) return '';
+  const last = d.turns[d.turns.length - 1];
+  return [d.meta.id, d.turns.length, d.meta.tools, last?.items.length, last?.end, d.live, JSON.stringify(d.pipeline?.flows?.[0]?.run?.stages?.map((s) => s.status + s.step) || '')].join('|');
+}
+function setDetail(d) {
+  if (!d || d.meta?.id !== ui.chatId) return;
+  const sig = sigOf(d);
+  if (sig === ui.detailSig) return;
+  ui.detailSig = sig;
+  ui.detail = d;
+  history.setHistory(d, { isLive: !!d.live });
+  if (d.pipeline) pipeline.setProject(d.pipeline);
+  if (ui.view === 'pipeline' && !hasPipeline()) setView('history');
+  renderStage();
+}
+const hasPipeline = () => !!ui.detail?.pipeline?.flows?.some((f) => f.run);
+
+async function selectChat(id) {
+  if (id === ui.chatId) return;
+  ui.chatId = id;
+  ui.detail = null;
+  ui.detailSig = '';
+  ui.turn = null;
+  ui.sel = null;
+  history.selectTurn(null);
+  render();
+  await refreshDetail();
+}
+function selectTurn(n) {
+  ui.turn = n;
+  history.selectTurn(n);
+  renderStage();
+  const li = document.querySelector(`[data-turn="${n}"]`);
+  li?.scrollIntoView({ block: 'nearest' });
+}
+function selectStage(sel) {
+  ui.sel = sel;
+  const f = ui.detail?.pipeline?.flows?.[0];
+  let agentId = sel?.type === 'agent' ? sel.id : null;
+  if (sel?.type === 'stage') agentId = f?.run?.stages.find((s) => s.key === sel.key)?.agentId || null;
+  pipeline.select(agentId);
+  renderStage();
+}
+function setView(v) {
+  ui.view = v;
+  for (const b of document.querySelectorAll('[data-view]')) b.setAttribute('aria-pressed', String(b.dataset.view === v));
+  history.setVisible(v === 'history');
+  pipeline.setVisible(v === 'pipeline');
+  $('#legend-history').hidden = v !== 'history';
+  $('#legend-pipeline').hidden = v !== 'pipeline';
+  $('#tip').hidden = true;
+  renderStage();
+}
+
+function renderTitle(d) {
+  const m = d.meta;
+  $('#p-name').textContent = m.title;
+  const when = m.created ? new Date(m.created).toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+  $('#p-root').textContent = [m.project?.root || m.cwd, m.branch ? `branch ${m.branch}` : null, when ? `início ${when}` : null].filter(Boolean).join('   ');
   const chips = $('#p-chips');
   chips.replaceChildren();
-  const c = { running: 0, complete: 0, blocked: 0, waiting: 0 };
-  let reworks = 0;
-  for (const f of det.flows) if (f.run) {
-    c[f.run.status]++;
-    reworks += f.run.reworks;
-  }
-  const chip = (cls, n, text) => {
-    if (!n) return;
+  const chip = (cls, b, text) => {
     const ch = el('span', `chip ${cls}`);
-    ch.append(el('b', null, String(n)), document.createTextNode(' ' + text));
+    ch.append(el('b', null, String(b)), document.createTextNode(' ' + text));
     chips.append(ch);
   };
-  chip('running', c.running + c.waiting, c.running + c.waiting > 1 ? 'pipelines em andamento' : 'pipeline em andamento');
-  chip('done', c.complete, c.complete > 1 ? 'entregues' : 'entregue');
-  chip('error', c.blocked, c.blocked > 1 ? 'bloqueados pelo QA' : 'bloqueado pelo QA');
-  chip('waiting', reworks, reworks > 1 ? 'retrabalhos' : 'retrabalho');
-  if (!det.flows.some((f) => f.run)) chip('', det.flows.length, det.flows.length > 1 ? 'sessões sem pipeline' : 'sessão sem pipeline');
-  renderDrawer(det);
+  if (d.live) chip('running', '●', STATUS_PT[d.status] ? STATUS_PT[d.status].toLowerCase() : 'ativo agora');
+  chip('', m.prompts, m.prompts === 1 ? 'prompt' : 'prompts');
+  chip('', m.tools, m.tools === 1 ? 'ferramenta' : 'ferramentas');
+  if (m.agents) chip('', m.agents, m.agents === 1 ? 'subagente' : 'subagentes');
+  if (m.errors) chip('error', m.errors, m.errors === 1 ? 'erro' : 'erros');
+  if (m.cost != null) chip('', money(m.cost), '');
 }
 
-function renderFlowCard(det, f) {
-  const box = el('section', 'flow' + (f.sid === ui.focusSid ? ' focus' : ''));
-  const head = button('flow-head', () => {
-    ui.focusSid = f.sid;
-    scene.focusRow(f.sid);
-    render();
-  });
-  head.append(el('span', 'n', f.label), el('span', 'pstatus ' + (f.run?.status || ''), f.run ? RUN_PT[f.run.status] : STATUS_PT[f.status] || ''));
-  box.append(head);
-  if (f.run?.task) box.append(el('p', 'task', f.run.task));
-  if (!f.run) {
-    box.append(el('p', 'hint', 'Esta sessão não usou o pipeline. Rode /agent-fleet-3d:pipeline <tarefa> para passar uma tarefa pelas quatro etapas.'));
-    box.append(el('p', 'hint', `Agora: ${f.step}`));
-  } else {
-    const ol = el('ol', 'stages');
-    for (const s of f.run.stages) {
-      const li = el('li');
-      const meta = [STAGE_PT[s.status], s.dur && s.status !== 'pending' ? dur(s.dur) : null, s.attempts > 1 ? `${s.attempts} tentativas` : null].filter(Boolean).join(', ');
-      const b = button(`stage-btn ${s.status}`, () => select({ type: 'stage', sid: f.sid, key: s.key }), el('span', 'dot'), el('span', 'n', s.label), el('span', 'm', meta));
-      if (s.status === 'active') b.append(el('span', 's', s.step || ''));
-      if (s.key === 'test' && s.verdict) b.append(el('span', 's ' + s.verdict, s.verdict === 'pass' ? 'Veredito: aprovado' : 'Veredito: reprovado'));
-      if (s.key === 'ship' && s.status === 'done' && s.result) b.append(el('span', 's', s.result.split('\n').pop()));
-      li.append(b);
-      ol.append(li);
-    }
-    box.append(ol);
-    if (f.run.reworks) box.append(el('p', 'hint', `O QA devolveu para o Engenheiro ${f.run.reworks} vez${f.run.reworks > 1 ? 'es' : ''}.`));
+function renderHistoryDrawer(d) {
+  const head = $('#d-head');
+  const body = $('#d-body');
+  head.replaceChildren();
+  body.replaceChildren();
+  head.append(el('h3', null, 'Histórico'), el('p', null, 'Cada anel na esteira é um prompt; os cubos depois dele são as ferramentas usadas. Clique num prompt para ver os detalhes.'));
+  if (d.meta.skills?.length) head.append(el('p', 'skills', `Skills usadas: ${d.meta.skills.join(', ')}`));
+  const ol = el('ol', 'turns');
+  const sel = ui.turn ?? d.turns[d.turns.length - 1]?.n;
+  for (const t of d.turns) {
+    const li = el('li');
+    li.dataset.turn = t.n;
+    const on = t.n === sel;
+    const b = button('turn-btn' + (on ? ' on' : ''), () => selectTurn(t.n), el('span', 'tn', String(t.n + 1)), el('span', 'tp', t.prompt || '(início da sessão)'), el('span', 'tm', `${plural(t.tools.length, 'ferramenta', 'ferramentas')}${t.agents.length ? `, ${plural(t.agents.length, 'subagente', 'subagentes')}` : ''}, ${ago(t.t)}`));
+    li.append(b);
+    if (on) li.append(turnDetail(t));
+    ol.append(li);
   }
-  const others = f.others.map((id) => det.agents.find((a) => a.id === id)).filter(Boolean);
-  if (others.length) {
-    box.append(el('p', 'sub-h', 'Outros agentes'));
+  body.append(ol);
+}
+
+function turnDetail(t) {
+  const box = el('div', 'turn-detail');
+  if (t.prompt) box.append(el('p', 'full-prompt', t.prompt));
+  if (t.reply) {
+    box.append(el('p', 'sub-h', 'Resposta'));
+    box.append(el('p', 'reply', t.reply));
+  }
+  if (t.agents.length) {
+    box.append(el('p', 'sub-h', 'Subagentes'));
     const ul = el('ul', 'agents');
-    for (const a of others) ul.append(item(button('agent-btn sub', () => select({ type: 'agent', id: a.id }), el('span', `dot ${a.status}`), el('span', 'n', a.label), el('span', 's', a.step))));
+    for (const a of t.agents) {
+      const name = a.stage ? STAGE_LABEL[a.stage] : a.type;
+      const st = a.verdict === 'fail' || a.err ? 'error' : a.end ? 'done' : 'running';
+      const b = el('div', 'agent-row');
+      b.append(el('span', `dot ${st}`), el('span', 'n', name), el('span', 's', a.desc || ''));
+      if (a.verdict) b.append(el('span', 's ' + a.verdict, a.verdict === 'pass' ? 'Veredito: aprovado' : 'Veredito: reprovado'));
+      else if (a.result) b.append(el('span', 's', a.result));
+      if (a.end && a.t) b.append(el('span', 'm', `${plural(a.tools.length, 'passo', 'passos')}, ${dur(a.end - a.t)}`));
+      ul.append(item(b));
+    }
     box.append(ul);
+  }
+  if (t.tools.length) {
+    box.append(el('p', 'sub-h', 'Ferramentas'));
+    const tl = el('ol', 'timeline');
+    for (const s of t.tools) {
+      const li = el('li', s.err ? 'error' : 'done');
+      li.append(el('div', 't', s.step));
+      li.append(el('div', 'm', [s.name, s.end && s.t ? `${((s.end - s.t) / 1000).toFixed(1)}s` : null].filter(Boolean).join(', ')));
+      if (s.err) li.append(el('div', 'err', s.err));
+      tl.append(li);
+    }
+    box.append(tl);
   }
   return box;
 }
 
-function renderTimeline(a) {
+// ----- pipeline drawer (same content as the project flow view)
+function renderPipelineDrawer(det) {
+  const head = $('#d-head');
+  const body = $('#d-body');
+  head.replaceChildren();
+  body.replaceChildren();
+  const back = () => button('back', () => selectStage(null), 'Voltar ao pipeline');
+  if (ui.sel?.type === 'stage') {
+    const f = det.flows[0];
+    const s = f?.run?.stages.find((x) => x.key === ui.sel.key);
+    const def = STAGES.find((x) => x.key === ui.sel.key);
+    head.append(back(), el('h3', null, def.label), el('p', null, `${def.verb}. ${s ? STAGE_PT[s.status] : 'Aguardando'}${s?.dur && s.status !== 'pending' ? `, ${dur(s.dur)}` : ''}.`));
+    const a = s?.agentId && det.agents.find((x) => x.id === s.agentId);
+    if (!a) return body.append(el('p', 'hint pad', 'Esta etapa ainda não começou.'));
+    if (s.history?.length > 1) {
+      body.append(el('p', 'sub-h pad', 'Tentativas'));
+      const ul = el('ul', 'agents');
+      s.history.forEach((h, i) => ul.append(item(button('agent-btn', () => selectStage({ type: 'agent', id: h.id }), el('span', `dot ${h.verdict === 'fail' ? 'error' : h.status}`), el('span', 'n', `${i + 1}ª tentativa`), el('span', 's', h.verdict ? (h.verdict === 'pass' ? 'aprovado' : 'reprovado') : STATUS_PT[h.status] || '')))));
+      body.append(ul);
+    }
+    body.append(...agentTimeline(a));
+    return;
+  }
+  if (ui.sel?.type === 'agent') {
+    const a = det.agents.find((x) => x.id === ui.sel.id);
+    if (a) {
+      head.append(back(), el('h3', null, a.label), el('p', null, `${STATUS_PT[a.status] || a.status}: ${a.step}`));
+      return body.append(...agentTimeline(a));
+    }
+  }
+  head.append(el('h3', null, 'Pipeline'), el('p', null, 'Tech Lead planeja, Engenheiro implementa, QA testa e DevOps sobe para o git. Clique numa etapa para ver os passos.'));
+  for (const f of det.flows) {
+    if (!f.run) continue;
+    const box = el('section', 'flow focus');
+    const fh = el('div', 'flow-head static');
+    fh.append(el('span', 'n', f.run.task || 'Execução'), el('span', 'pstatus ' + f.run.status, RUN_PT[f.run.status]));
+    box.append(fh);
+    const ol = el('ol', 'stages');
+    for (const s of f.run.stages) {
+      const meta = [STAGE_PT[s.status], s.dur && s.status !== 'pending' ? dur(s.dur) : null, s.attempts > 1 ? `${s.attempts} tentativas` : null].filter(Boolean).join(', ');
+      const b = button(`stage-btn ${s.status}`, () => selectStage({ type: 'stage', sid: f.sid, key: s.key }), el('span', 'dot'), el('span', 'n', s.label), el('span', 'm', meta));
+      if (s.status === 'active') b.append(el('span', 's', s.step || ''));
+      if (s.key === 'test' && s.verdict) b.append(el('span', 's ' + s.verdict, s.verdict === 'pass' ? 'Veredito: aprovado' : 'Veredito: reprovado'));
+      if (s.key === 'ship' && s.status === 'done' && s.result) b.append(el('span', 's', s.result.split('\n').pop()));
+      ol.append(item(b));
+    }
+    box.append(ol);
+    if (f.run.reworks) box.append(el('p', 'hint', `O QA devolveu para o Engenheiro ${f.run.reworks} vez${f.run.reworks > 1 ? 'es' : ''}.`));
+    if (f.runs > 1) box.append(el('p', 'hint', `Este chat rodou o pipeline ${f.runs} vezes; a cena mostra a mais recente.`));
+    body.append(box);
+  }
+}
+function agentTimeline(a) {
   const dl = el('dl', 'facts');
   const fact = (k, v) => v != null && v !== '' && dl.append(el('dt', null, k), el('dd', null, String(v)));
   fact('Agente', a.kind === 'main' ? 'Sessão principal (orquestrador)' : a.type);
@@ -1857,59 +3245,35 @@ function renderTimeline(a) {
   fact('Ferramentas', a.tools);
   if (a.errors) fact('Erros', a.errors);
   fact('Início', ago(a.started));
-  fact('Último evento', ago(a.last));
   if (a.result) fact('Resultado', a.result);
   const tl = el('ol', 'timeline');
-  tl.setAttribute('aria-label', 'Passos, do mais recente ao mais antigo');
   for (const s of [...a.steps].reverse()) {
     const li = el('li', s.st);
     li.append(el('div', 't', s.step));
-    const meta = [s.tool, ago(s.t), s.dur != null ? `${(s.dur / 1000).toFixed(s.dur < 10000 ? 1 : 0)}s` : s.st === 'running' ? 'em andamento' : null].filter(Boolean).join(', ');
-    li.append(el('div', 'm', meta));
+    li.append(el('div', 'm', [s.tool, ago(s.t), s.dur != null ? `${(s.dur / 1000).toFixed(1)}s` : null].filter(Boolean).join(', ')));
     if (s.err) li.append(el('div', 'err', s.err));
     tl.append(li);
   }
   return [dl, tl];
 }
 
-function renderDrawer(det) {
-  const head = $('#d-head');
-  const body = $('#d-body');
-  head.replaceChildren();
-  body.replaceChildren();
-  const back = () => button('back', () => select(null), 'Voltar ao pipeline');
-
-  if (ui.sel?.type === 'stage') {
-    const f = det.flows.find((x) => x.sid === ui.sel.sid);
-    const s = f?.run?.stages.find((x) => x.key === ui.sel.key);
-    const def = STAGES.find((x) => x.key === ui.sel.key);
-    head.append(back(), el('h3', null, def.label), el('p', null, `${def.verb}. ${s ? STAGE_PT[s.status] : 'Aguardando'}${s?.dur && s.status !== 'pending' ? `, ${dur(s.dur)}` : ''}.`));
-    const a = s?.agentId && det.agents.find((x) => x.id === s.agentId);
-    if (!a) {
-      body.append(el('p', 'hint pad', 'Esta etapa ainda não começou. Ela inicia quando a etapa anterior terminar.'));
-      return;
-    }
-    if (s.history?.length > 1) {
-      body.append(el('p', 'sub-h pad', 'Tentativas'));
-      const ul = el('ul', 'agents');
-      s.history.forEach((h, i) => ul.append(item(button('agent-btn', () => select({ type: 'agent', id: h.id }), el('span', `dot ${h.verdict === 'fail' ? 'error' : h.status}`), el('span', 'n', `${i + 1}ª tentativa`), el('span', 's', h.verdict ? (h.verdict === 'pass' ? 'aprovado' : 'reprovado') : STATUS_PT[h.status] || '')))));
-      body.append(ul);
-    }
-    body.append(...renderTimeline(a));
+function renderStage() {
+  const d = ui.detail;
+  $('#placeholder').hidden = !!d;
+  $('#title').hidden = !d;
+  $('#drawer').hidden = !d;
+  $('#recenter').hidden = !d;
+  $('#views').hidden = !(d && hasPipeline());
+  const inset = d ? $('#drawer').offsetWidth + 24 : 0;
+  history.setInset(inset);
+  pipeline.setInset(inset);
+  if (!d) {
+    if (ui.chatId) $('#placeholder').firstElementChild.textContent = 'Carregando o histórico…';
     return;
   }
-
-  if (ui.sel?.type === 'agent') {
-    const a = det.agents.find((x) => x.id === ui.sel.id);
-    if (a) {
-      head.append(back(), el('h3', null, a.label), el('p', null, `${STATUS_PT[a.status] || a.status}: ${a.step}`));
-      body.append(...renderTimeline(a));
-      return;
-    }
-  }
-
-  head.append(el('h3', null, 'Pipeline'), el('p', null, 'Tech Lead planeja, Engenheiro implementa, QA testa e DevOps sobe para o git. Clique numa etapa para ver os passos.'));
-  for (const f of det.flows) body.append(renderFlowCard(det, f));
+  renderTitle(d);
+  if (ui.view === 'pipeline' && d.pipeline) renderPipelineDrawer(d.pipeline);
+  else renderHistoryDrawer(d);
 }
 
 function renderFooter() {
@@ -1924,55 +3288,70 @@ function renderFooter() {
   }
 }
 
+function showTip(p, at) {
+  const tip = $('#tip');
+  if (!p || ui.view !== 'history') return (tip.hidden = true);
+  tip.replaceChildren();
+  if (p.kind === 'tool') {
+    tip.append(el('b', null, p.tool.step), el('span', null, `${p.tool.name}${p.tool.err ? ', com erro' : ''}, no prompt ${p.turn.n + 1}`));
+    if (p.tool.err) tip.append(el('span', 'err', p.tool.err));
+  } else if (p.kind === 'agent') {
+    const a = p.agent;
+    tip.append(el('b', null, a.stage ? STAGE_LABEL[a.stage] : a.type), el('span', null, a.desc || ''));
+    if (a.verdict) tip.append(el('span', null, a.verdict === 'pass' ? 'Veredito: aprovado' : 'Veredito: reprovado'));
+  } else if (p.kind === 'turn') {
+    tip.append(el('b', null, `Prompt ${p.turn.n + 1}`), el('span', null, (p.turn.prompt || '(início da sessão)').slice(0, 140)));
+  }
+  tip.style.left = `${Math.min(at.x + 14, (tip.parentElement.clientWidth || 800) - 280)}px`;
+  tip.style.top = `${at.y + 14}px`;
+  tip.hidden = false;
+}
+
 let raf = 0;
 function render() {
   cancelAnimationFrame(raf);
   raf = requestAnimationFrame(() => {
-    if (!ui.selected && ui.projects.length && matchMedia('(min-width: 901px)').matches) ui.selected = ui.projects[0].id;
-    renderProjects();
+    if (!ui.chatId && ui.chats.length && matchMedia('(min-width: 901px)').matches) {
+      const first = groupChats(visibleChats(), ui.group)[0]?.chats[0];
+      if (first) selectChat(first.id);
+    }
+    renderList();
     renderStage();
     renderFooter();
   });
 }
 
-async function selectProject(id) {
-  ui.selected = id;
-  ui.sel = null;
-  ui.focusSid = null;
-  scene.select(null);
-  await ensureDetail(id);
-  render();
-}
-function select(sel) {
-  ui.sel = sel;
-  const det = ui.details[ui.selected];
-  let agentId = sel?.type === 'agent' ? sel.id : null;
-  if (sel?.type === 'stage') {
-    ui.focusSid = sel.sid;
-    scene.focusRow(sel.sid);
-    agentId = det?.flows.find((f) => f.sid === sel.sid)?.run?.stages.find((s) => s.key === sel.key)?.agentId || null;
-  }
-  if (sel?.type === 'agent' && det?.flows.some((f) => f.sid === sel.id)) {
-    ui.focusSid = sel.id;
-    scene.focusRow(sel.id);
-  }
-  scene.select(agentId);
-  render();
-}
-
+// ------------------------------------------------------------------ controls
 $('#filter').addEventListener('input', (e) => {
-  ui.filter = e.target.value;
-  renderProjects();
+  ui.q = e.target.value;
+  renderList();
 });
-$('#recenter').addEventListener('click', () => scene.recenter());
+$('#group').value = ui.group;
+$('#show').value = ui.show;
+$('#group').addEventListener('change', (e) => {
+  ui.group = e.target.value;
+  store.set('group', ui.group);
+  renderList();
+});
+$('#show').addEventListener('change', (e) => {
+  ui.show = e.target.value;
+  store.set('show', ui.show);
+  renderList();
+});
+for (const b of document.querySelectorAll('[data-view]')) b.addEventListener('click', () => setView(b.dataset.view));
+$('#recenter').addEventListener('click', () => (ui.view === 'pipeline' ? pipeline.recenter() : history.recenter()));
 addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && ui.sel) select(null);
+  if (e.key !== 'Escape') return;
+  if (ui.view === 'pipeline' && ui.sel) selectStage(null);
 });
 
 const params = new URLSearchParams(location.search);
 if (true) startLocalDemo();
 else if (!(await connectLive())) startLocalDemo();
-setInterval(render, 5000); // keep relative times fresh
+setInterval(() => {
+  renderList();
+  renderFooter();
+}, 30000); // keep relative times fresh
 render();
 
 </script>

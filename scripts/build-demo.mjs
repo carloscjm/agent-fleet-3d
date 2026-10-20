@@ -12,16 +12,19 @@ const read = (p) => readFileSync(join(root, p), 'utf8');
 // then expose only its exports.
 function scoped(src) {
   const names = [...src.matchAll(/^export (?:const|function|let|async function) ([A-Za-z0-9_$]+)/gm)].map((m) => m[1]);
-  const body = src.replace(/^import .*;$/gm, '').replace(/^export (?=(const|function|let|async))/gm, '');
+  const body = src
+    .replace(/^import [\s\S]*? from '[^']+';$/gm, '')
+    .replace(/^export \{[^}]*\};?$/gm, '')
+    .replace(/^export (?=(const|function|let|async))/gm, '');
   return `const { ${names.join(', ')} } = (() => {\n${body}\nreturn { ${names.join(', ')} };\n})();`;
 }
-const coreSrc = read('shared/fleet-core.mjs');
-const sceneSrc = read('ui/scene.js');
+// order matters: each module only sees the exports of the ones before it
+const modules = ['shared/steps.mjs', 'shared/fleet-core.mjs', 'shared/history-core.mjs', 'shared/history-demo.mjs', 'ui/scene.js', 'ui/scene-history.js'];
+const threeImports = [...new Set(modules.flatMap((m) => read(m).match(/^import .* from '(three|three\/addons\/[^']+)';$/gm) || []))];
 const app = read('ui/app.js')
-  .replace(/^import .*?from '(\.\/scene\.js|\.\.\/shared\/fleet-core\.mjs)';\n/gm, '')
+  .replace(/^import [\s\S]*? from '\.{1,2}\/[^']+';$/gm, '')
   .replace("if (params.has('demo'))", 'if (true)'); // no server here: always run the built-in demo
-const sceneImports = sceneSrc.match(/^import .*;$/gm).join('\n');
-const bundle = [sceneImports, scoped(coreSrc), scoped(sceneSrc), app].join('\n');
+const bundle = [...threeImports, ...modules.map((m) => scoped(read(m))), app].join('\n');
 
 let html = read('ui/index.html');
 html = html.replace('<link rel="stylesheet" href="./styles.css" />', `<style>\n${read('ui/styles.css')}\n</style>`);

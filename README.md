@@ -2,7 +2,7 @@
 
 # Agent Fleet 3D
 
-**Passe cada tarefa por um time de agentes — Tech Lead, Engenheiro, QA e DevOps — e acompanhe o fluxo em 3D, ao vivo.**
+**Veja todos os seus chats do Claude Code em 3D e passe cada tarefa por um time de agentes: Tech Lead, Engenheiro, QA e DevOps.**
 <br/>
 **Cada etapa usa as skills do Tech Leads Club, escolhidas sem pagar o catálogo inteiro em tokens.**
 
@@ -10,10 +10,10 @@
 ![Node 18+](https://img.shields.io/badge/node-%E2%89%A518-15304b)
 ![Zero dependências](https://img.shields.io/badge/depend%C3%AAncias-0-138a7d)
 ![94 skills](https://img.shields.io/badge/skills%20TLC-94-c98500)
-![Testes](https://img.shields.io/badge/testes-8%2F8-138a7d) ![Versão](https://img.shields.io/badge/vers%C3%A3o-0.3.0-1b3a59)
+![Testes](https://img.shields.io/badge/testes-13%2F13-138a7d) ![Versão](https://img.shields.io/badge/vers%C3%A3o-0.4.0-1b3a59)
 ![Licença MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-647d99)
 
-<img src="docs/media/demo.gif" alt="Dashboard: lista de projetos com barra de progresso do pipeline à esquerda, fluxo 3D com as estações Tech Lead, Engenheiro, QA e DevOps, e o painel de etapas à direita" width="860" />
+<img src="docs/media/demo.gif" alt="Dashboard: lista de chats agrupada por data à esquerda, histórico do chat selecionado como uma esteira 3D com prompts, ferramentas e subagentes, e a troca para a visão do pipeline" width="860" />
 
 [Instalar](#instalação) · [Usar](#uso) · [Pipeline](#o-pipeline) · [Como funciona](#como-funciona) · [Roteador de skills](#roteador-de-skills) · [Visualizações](#visualizações) · [Desenvolvimento](#desenvolvimento)
 
@@ -28,29 +28,30 @@ Um plugin do Claude Code com três partes que trabalham juntas:
 | | O que faz |
 | --- | --- |
 | **Pipeline de agentes** | `/agent-fleet-3d:pipeline <tarefa>` passa a tarefa por quatro agentes em sequência: o **Tech Lead** planeja, o **Engenheiro** implementa, o **QA** testa e o **DevOps** sobe para o git. Se o QA reprovar, a tarefa volta para o Engenheiro, até duas vezes. |
-| **Dashboard 3D** | À esquerda, os projetos com agentes trabalhando agora e a barra de progresso de cada pipeline. Ao clicar num projeto, o fluxo aparece em 3D: as quatro estações ligadas por uma esteira, o pacote de trabalho parado na etapa atual e o passo que o agente está executando. |
+| **Histórico em 3D** | À esquerda, **todos os chats do Claude Code salvos no computador**, inclusive os que nunca usaram o plugin, com busca, agrupamento por data ou projeto e filtros. Ao clicar num chat, o histórico dele vira uma esteira em 3D: cada prompt é um anel, cada ferramenta usada é um cubo colorido pelo tipo, e cada subagente sai da esteira num ramal. |
+| **Pipeline em 3D** | Nos chats que rodaram o pipeline, o botão **Pipeline** mostra as quatro estações ligadas por uma esteira, a etapa atual, o tempo de cada uma e o retrabalho quando o QA reprova. Funciona ao vivo e também para chats antigos. |
 | **Roteador de skills** | As 94 skills do [Tech Leads Club](https://agent-skills.techleads.club/skills/) ficam no plugin. Cada agente do pipeline usa as dele, e nos seus pedidos comuns um índice local escolhe a skill certa. Carregar o catálogo inteiro custaria cerca de 12.700 tokens por sessão; uma sugestão custa de 60 a 200, e nada quando nenhuma skill se aplica. |
 
-Tudo roda na sua máquina. Nenhum dado sai do seu computador.
+Tudo roda na sua máquina: o dashboard só aceita conexões do próprio computador (`127.0.0.1`), e nenhum chat sai dele.
 
 ## Prints
 
 <table>
   <tr>
-    <td width="50%"><img src="docs/media/fluxo.png" alt="Fluxo 3D com duas sessões: cada uma com as estações Tech Lead, Engenheiro, QA e DevOps ligadas por uma esteira até o Git" /></td>
-    <td width="50%"><img src="docs/media/retrabalho.png" alt="QA reprovou: estação do QA em vermelho e o caminho de retrabalho levando a tarefa de volta ao Engenheiro" /></td>
+    <td width="50%"><img src="docs/media/historico.png" alt="Histórico de um chat com três prompts: anéis na esteira e cubos coloridos para cada ferramenta; à direita, o prompt selecionado com a resposta e a lista de ferramentas" /></td>
+    <td width="50%"><img src="docs/media/historico-pipeline.png" alt="Histórico de um chat que rodou o pipeline: cada subagente sai da esteira com a forma da sua etapa, e o QA reprovado aparece em vermelho" /></td>
   </tr>
   <tr>
-    <td><b>Fluxo.</b> Uma linha por sessão. A esteira acende conforme as etapas avançam, e o pacote de trabalho fica sobre a estação ativa.</td>
-    <td><b>Retrabalho.</b> Quando o QA reprova, a estação fica vermelha e o caminho no chão leva a tarefa de volta ao Engenheiro.</td>
+    <td><b>Histórico.</b> Cada anel é um prompt; os cubos depois dele são as ferramentas, na ordem em que rodaram. Passe o mouse para ver o passo; clique para abrir o prompt.</td>
+    <td><b>Subagentes.</b> Cada subagente sai da esteira num ramal. As etapas do pipeline usam as formas das estações e mostram o veredito do QA.</td>
   </tr>
   <tr>
-    <td><img src="docs/media/etapa-detalhe.png" alt="Painel de uma etapa com as tentativas, a skill usada, o resultado e a linha do tempo de passos" /></td>
-    <td><img src="docs/media/tema-claro.png" alt="Dashboard no tema claro" /></td>
+    <td><img src="docs/media/retrabalho.png" alt="Visão do pipeline do mesmo chat: estações Tech Lead, Engenheiro, QA e DevOps, com o caminho de retrabalho do QA de volta ao Engenheiro" /></td>
+    <td><img src="docs/media/agrupar-filtrar.png" alt="Lista de chats agrupada por projeto e filtrada para mostrar só chats com pipeline" /></td>
   </tr>
   <tr>
-    <td><b>Detalhe da etapa.</b> Tentativas, skill usada, resultado e cada passo com a duração.</td>
-    <td><b>Tema claro.</b> Segue a preferência do sistema.</td>
+    <td><b>Pipeline.</b> As quatro etapas com tempo, tentativas e o retrabalho quando o QA reprova.</td>
+    <td><b>Agrupar e filtrar.</b> Por data ou por projeto, e só os ativos, com pipeline, sem pipeline ou com erros.</td>
   </tr>
 </table>
 
@@ -85,27 +86,48 @@ Para conferir: ao digitar `/` aparecem `agent-fleet-3d:pipeline`, `agent-fleet-3
 
 O navegador abre o dashboard, normalmente em `http://localhost:4317`. Use `/agent-fleet-3d:fleet demo` para ver com dados simulados.
 
-### 2. Rode uma tarefa pelo pipeline
+### 2. Escolha um chat
+
+A coluna da esquerda lista todos os chats do Claude Code salvos no computador: aba Code do app, terminal e IDE. Isso inclui chats que nunca usaram o plugin.
+
+| Controle | O que faz |
+| --- | --- |
+| **Buscar chats** | Procura no título, no projeto, na branch, nos prompts e nas skills usadas. Ignora acentos |
+| **Agrupar** | Por data (Hoje, Ontem, Últimos 7 dias, Últimos 30 dias, meses), por projeto, ou sem grupos. Clique no nome do grupo para recolher |
+| **Mostrar** | Todos, só os ativos agora, só os que rodaram o pipeline, só os que não rodaram, ou só os que tiveram erros |
+
+A escolha de agrupamento e filtro fica salva no navegador. Chats ativos têm um ponto colorido com o estado atual.
+
+### 3. Leia o histórico
+
+| Na cena | Significa |
+| --- | --- |
+| Anel dourado | Um prompt seu. O selecionado brilha e mostra o texto |
+| Cubo cinza | Leitura: `Read`, `Grep`, `Glob` |
+| Cubo verde-água | Edição: `Edit`, `Write` |
+| Cubo âmbar | Comando no terminal |
+| Cubo rosa | Busca ou página da web |
+| Cubo vermelho | Ferramenta que falhou |
+| Ramal com forma | Subagente; as formas de Tech Lead, Engenheiro, QA e DevOps são as das estações do pipeline |
+| Ponto pulsando no fim | O chat está ativo agora |
+
+A esteira faz curvas quando o chat é longo, então o começo fica na frente e o fim lá atrás. Clique num anel ou num prompt do painel para ver a resposta, os subagentes e cada ferramenta com a duração.
+
+### 4. Rode uma tarefa pelo pipeline
 
 ```
 /agent-fleet-3d:pipeline adicionar endpoint /health com teste
 ```
 
-O projeto aparece na lista assim que o Tech Lead começa. Os agentes trocam o trabalho por arquivos numa pasta `.agent-pipeline/<tarefa>/` no projeto, que fica fora do git.
+O chat aparece no topo da lista. Use o botão **Pipeline** para ver as estações; os agentes trocam o trabalho por arquivos numa pasta `.agent-pipeline/<tarefa>/` do projeto, que fica fora do git.
 
-### 3. Leia a cena
-
-| Na cena | Significa |
+| No pipeline | Significa |
 | --- | --- |
 | Estação apagada | Etapa ainda não começou |
 | Estação âmbar girando, com anel | Etapa em andamento; o cartão mostra o passo atual |
-| Estação turquesa | Etapa concluída; o cartão mostra quanto tempo levou |
+| Estação turquesa | Etapa concluída, com o tempo que levou |
 | Estação vermelha e caminho no chão | QA reprovou; a tarefa volta para o Engenheiro |
-| Estação ou sessão rosa piscando | O agente está esperando você no app |
-| Pilha de placas atrás da estação | Os últimos passos da etapa, coloridos pelo tipo de ferramenta |
 | Repositório turquesa no fim | DevOps terminou: commit enviado e PR aberto |
-
-Clique numa estação, na cena ou no painel da direita, para ver as tentativas e os passos daquela etapa. `Esc` volta. Arraste para girar a câmera, use a roda do mouse para zoom e **Recentrar câmera** para voltar ao enquadramento.
 
 ### Comandos
 
@@ -154,7 +176,8 @@ flowchart LR
   S -->|"atualização ao vivo"| U["Dashboard 3D"]
 ```
 
-1. **Coleta.** Hooks do Claude Code gravam um evento compacto a cada ação: sessão, subagente, ferramenta e um resumo legível do passo (`Edit checkout.ts`, `Rodar testes`, `Delegando: mapear módulos`). Eles rodam em segundo plano e não atrasam o agente.
+1. **Histórico.** O servidor lê os chats que o Claude Code grava em `~/.claude/projects/` (no Windows, `%USERPROFILE%\.claude\projects`), um arquivo `.jsonl` por chat, e os subagentes em `<chat>/subagents/`. Só relê o que mudou desde a última leitura e guarda um índice em `~/.agent-fleet/history-index.json`. Para chats antigos, o pipeline é reconstruído a partir do próprio arquivo.
+1. **Coleta ao vivo.** Hooks do Claude Code gravam um evento compacto a cada ação: sessão, subagente, ferramenta e um resumo legível do passo (`Edit checkout.ts`, `Rodar testes`, `Delegando: mapear módulos`). Eles rodam em segundo plano e não atrasam o agente.
 2. **Projeto.** O projeto é a raiz git mais próxima da pasta onde o agente está.
 3. **Estado.** Um reducer (`shared/fleet-core.mjs`) transforma eventos em agentes com estado. Cada subagente do tipo `tech-lead`, `engineer`, `qa` ou `devops` vira uma etapa do pipeline daquela sessão; o veredito do QA é lido da última mensagem dele. O mesmo código roda no servidor e no navegador.
 4. **Tela.** O servidor envia as mudanças por SSE; a cena 3D é desenhada com three.js.
@@ -320,7 +343,8 @@ Próximas propostas, detalhadas em [docs/visualizacoes.md](docs/visualizacoes.md
 | --- | --- | --- |
 | `AGENT_FLEET_HOME` | `~/.agent-fleet` | Onde ficam os eventos e o cache do roteador |
 | `AGENT_FLEET_PORT` | `4317` | Porta do dashboard |
-| `AGENT_FLEET_REDACT_PROMPTS` | vazio | Se definida, o texto dos seus prompts não é gravado |
+| `AGENT_FLEET_REDACT_PROMPTS` | vazio | Se definida, o texto dos seus prompts não é gravado pelos hooks |
+| `AGENT_FLEET_CLAUDE_DIR` | `~/.claude` | Outra pasta de dados do Claude Code para ler o histórico; aceita várias, separadas por vírgula |
 
 ## Desenvolvimento
 
@@ -346,8 +370,8 @@ skills/            pipeline, fleet, find-skill e skill-router
 skills-library/    94 skills do Tech Leads Club, por categoria
 router/            índice, pontuação, hook e CLI
 telemetry/         captura de eventos dos hooks
-shared/            reducer de estado + gerador de demo
-server/            servidor HTTP + SSE sem dependências
+shared/            estado dos agentes, leitor de histórico e dados de demonstração
+server/            servidor HTTP + SSE e índice do histórico, sem dependências
 ui/                dashboard (three.js embutido em ui/vendor)
 docs/              demo autônoma, prints e propostas de visualização
 test/              testes com node --test
@@ -358,7 +382,14 @@ test/              testes com node --test
 ## Solução de problemas
 
 <details>
-<summary><b>O dashboard abre, mas nenhum projeto aparece</b></summary>
+<summary><b>Não aparece nenhum chat na lista</b></summary>
+
+A lista vem da pasta `.claude/projects` da sua conta. Ela é criada quando você usa o Claude Code pela primeira vez na aba **Code** ou no terminal. Conversas da aba de chat comum do Claude ficam na nuvem, não no computador, e por isso não aparecem. Se você usa outra pasta de dados, defina `AGENT_FLEET_CLAUDE_DIR`.
+
+</details>
+
+<details>
+<summary><b>O estado ao vivo não aparece</b></summary>
 
 Veja se `~/.agent-fleet/events.jsonl` cresce enquanto o agente trabalha. Se não crescer, os hooks não estão rodando: confira `/hooks` no Claude Code e se o `node` está no PATH do terminal onde o Claude Code foi aberto.
 

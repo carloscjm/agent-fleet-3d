@@ -323,10 +323,10 @@ export function projectDetail(state, id, now = Date.now()) {
 // ---------------------------------------------------------------------------
 // Demo generator: sessions running the delivery pipeline, same event shape as the hooks.
 const DEMO_PROJECTS = [
-  { id: 'demo-checkout', name: 'checkout-api', root: '~/code/checkout-api', tasks: ['Retry com idempotência no pagamento', 'Webhook de estorno', 'Limite de tentativas por cartão'] },
-  { id: 'demo-mobile', name: 'mobile-app', root: '~/code/mobile-app', tasks: ['Tela de onboarding com biometria', 'Cache offline do carrinho'] },
-  { id: 'demo-data', name: 'data-pipeline', root: '~/code/data-pipeline', tasks: ['Deduplicar eventos de pedido', 'Particionar tabela de vendas'] },
-  { id: 'demo-site', name: 'landing-site', root: '~/code/landing-site', tasks: ['Melhorar LCP da home', 'Formulário de contato acessível'] },
+  { id: 'demo-checkout', name: 'checkout-api', root: 'C:\\Users\\carlos\\code\\checkout-api', tasks: ['Retry com idempotência no pagamento', 'Webhook de estorno', 'Limite de tentativas por cartão'] },
+  { id: 'demo-mobile', name: 'mobile-app', root: 'C:\\Users\\carlos\\code\\mobile-app', tasks: ['Tela de onboarding com biometria', 'Cache offline do carrinho'] },
+  { id: 'demo-data', name: 'data-pipeline', root: 'C:\\Users\\carlos\\code\\data-pipeline', tasks: ['Deduplicar eventos de pedido', 'Particionar tabela de vendas'] },
+  { id: 'demo-site', name: 'landing-site', root: 'C:\\Users\\carlos\\code\\landing-site', tasks: ['Melhorar LCP da home', 'Formulário de contato acessível'] },
 ];
 const STAGE_TOOLS = {
   plan: [
